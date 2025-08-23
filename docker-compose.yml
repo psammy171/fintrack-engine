@@ -1,0 +1,19 @@
+version: '3.9'
+
+networks:
+  mysql_network:
+    name: mysql_network
+    external: true
+
+services:
+  fintrack:
+    build: .
+    image: fintrack:${TAG}
+    container_name: fintrack
+    ports:
+      - "3005:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: unless-stopped
+    networks:
+      - mysql_network
