@@ -10,7 +10,7 @@ pipeline {
         stage("Build docker image and push to hub"){
             steps {
                 sh "TAG=${params.Tag} docker compose -f docker-compose.yml build"
-                sh "docker image tag accounts:${params.Tag} psammy171/unacero:fintrack-${params.Tag}"
+                sh "docker image tag fintrack:${params.Tag} psammy171/unacero:fintrack-${params.Tag}"
                 sh "docker image push psammy171/unacero:fintrack-${params.Tag}"
             }
         }
