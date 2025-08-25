@@ -31,10 +31,18 @@ pipeline {
             echo "Job Completed!"
         }
         success {
-            slackSend(channel: "deployment-notifications", message: "```Fintrack app built and deployed successfully!```", color: "#11710D")
+             sh '''
+                curl -s -X POST https://api.telegram.org/bot8287871668:AAHueSxxmuFajZegejGqSrVS7sWph9EGrk0/sendMessage \
+                -d chat_id=-4861545392 \
+                -d text="✅ Fintrack backend built and deployed"
+             '''
         }
         failure {
-            slackSend(channel: "deployment-notifications", message: "```Fintrack app build and deployment failed!```", color: "#BB0020")
+            sh '''
+                curl -s -X POST https://api.telegram.org/bot8287871668:AAHueSxxmuFajZegejGqSrVS7sWph9EGrk0/sendMessage \
+                -d chat_id=-4861545392 \
+                -d text="❌ Account build failed"
+            '''
         }
     }
 }
