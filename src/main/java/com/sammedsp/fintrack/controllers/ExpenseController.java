@@ -2,6 +2,7 @@ package com.sammedsp.fintrack.controllers;
 
 import com.sammedsp.fintrack.dtos.CreateExpenseDto;
 import com.sammedsp.fintrack.dtos.ExpenseResponseDto;
+import com.sammedsp.fintrack.dtos.PageResponse;
 import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.entities.Expense;
 import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
@@ -33,14 +34,15 @@ public class ExpenseController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ExpenseResponseDto>> getUserExpenses(Authentication authentication, @RequestParam(defaultValue = "0") int pageNumber,
-                                                                    @RequestParam(defaultValue = "50") int pageSize){
+    public ResponseEntity<PageResponse<ExpenseResponseDto>> getUserExpenses(Authentication authentication, @RequestParam(defaultValue = "0") int pageNumber,
+                                                                            @RequestParam(defaultValue = "50") int pageSize,
+                                                                            @RequestParam(required = false) String folderId){
         UserContext userContext = (UserContext) authentication.getPrincipal();
 
         Sort sort = Sort.by("time").descending();
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
 
-        Page<ExpenseResponseDto> paginatedExpenses = this.expenseService.getExpense(userContext.userId(), pageable);
+        PageResponse<ExpenseResponseDto> paginatedExpenses = this.expenseService.getExpense(userContext.userId(), folderId, pageable);
         return ResponseEntity.ok(paginatedExpenses);
     }
 }

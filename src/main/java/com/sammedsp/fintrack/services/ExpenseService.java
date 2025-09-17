@@ -2,6 +2,7 @@ package com.sammedsp.fintrack.services;
 
 import com.sammedsp.fintrack.dtos.CreateExpenseDto;
 import com.sammedsp.fintrack.dtos.ExpenseResponseDto;
+import com.sammedsp.fintrack.dtos.PageResponse;
 import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.entities.Expense;
 import com.sammedsp.fintrack.entities.Tag;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,12 +35,12 @@ public class ExpenseService {
         return this.expenseRepository.save(expense);
     }
 
-    public Page<ExpenseResponseDto> getExpense(String userId, Pageable pageable){
-        Page<Expense> paginatedExpense = this.expenseRepository.findAllByUserId(userId, pageable);
+    public PageResponse<ExpenseResponseDto> getExpense(String userId, String folderId, Pageable pageable){
+        Page<Expense> paginatedExpense =  this.expenseRepository.findAllByUserIdAndFolderId(userId, folderId, pageable);
 
         Map<String, Tag> tagsMap = this.getTagsMap(userId);
 
-        return paginatedExpense.map(expense -> {
+        Page<ExpenseResponseDto> expenseResponseDtoPage =  paginatedExpense.map(expense -> {
             String tagName = null;
             if (expense.getTagId() != null) {
                 Tag tag = tagsMap.get(expense.getTagId());
@@ -50,6 +50,9 @@ public class ExpenseService {
             }
             return new ExpenseResponseDto(expense.getId(), expense.getRemark(), expense.getTagId(), tagName,expense.getAmount(), expense.getTime());
         });
+
+        return new PageResponse<ExpenseResponseDto>(expenseResponseDtoPage.getContent(),expenseResponseDtoPage.isFirst(), expenseResponseDtoPage.isLast(), expenseResponseDtoPage.getTotalElements(), expenseResponseDtoPage.getTotalPages());
+
     }
 
     private Map<String, Tag> getTagsMap(String userId){
@@ -59,6 +62,6 @@ public class ExpenseService {
     }
 
     private Expense createExpenseObject(CreateExpenseDto createExpenseDto, String userId){
-        return new Expense(createExpenseDto.getAmount(), createExpenseDto.getRemark(), createExpenseDto.getTagId(), createExpenseDto.getTime(), userId);
+        return new Expense(createExpenseDto.getAmount(), createExpenseDto.getRemark(), createExpenseDto.getTagId(), createExpenseDto.getTime(), userId, createExpenseDto.getFolderId());
     }
 }
