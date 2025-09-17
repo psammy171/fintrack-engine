@@ -14,6 +14,8 @@ import java.util.List;
 public interface ExpenseRepository extends JpaRepository<Expense, String> {
     public Page<Expense> findAllByUserId(String userId, Pageable pageable);
 
+    public Page<Expense> findAllByUserIdAndFolderId(String userId, String folderId, Pageable pageable);
+
     @Query(value = """
         SELECT
             SUM(e.amount) AS total,

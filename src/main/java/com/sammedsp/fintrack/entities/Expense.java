@@ -15,6 +15,9 @@ public class Expense extends BaseEntity {
     @Column(name = "tag_id")
     private String tagId;
 
+    @Column(name = "folder_id", nullable = true)
+    private String folderId;
+
     private LocalDateTime time;
 
     @Column(name = "user_id")
@@ -22,12 +25,13 @@ public class Expense extends BaseEntity {
 
     public Expense(){}
 
-    public Expense(Float amount, String remark, String tagId, LocalDateTime time, String userId){
+    public Expense(Float amount, String remark, String tagId, LocalDateTime time, String userId, String folderId){
         this.amount = amount;
         this.remark = remark;
         this.tagId = tagId;
         this.time = time;
         this.userId = userId;
+        this.folderId = folderId;
     }
 
     public Float getAmount() {

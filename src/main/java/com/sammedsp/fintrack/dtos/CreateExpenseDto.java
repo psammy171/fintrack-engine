@@ -20,6 +20,8 @@ public class CreateExpenseDto {
     @Positive(message = "Amount should be positive number")
     Float amount;
 
+    String folderId;
+
     public String getTagId() {
         return tagId;
     }
@@ -34,5 +36,9 @@ public class CreateExpenseDto {
 
     public Float getAmount() {
         return amount;
+    }
+
+    public String getFolderId() {
+        return folderId;
     }
 }
