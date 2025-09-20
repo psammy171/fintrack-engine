@@ -6,6 +6,7 @@ import com.sammedsp.fintrack.entities.Expense;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -15,6 +16,10 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
     public Page<Expense> findAllByUserId(String userId, Pageable pageable);
 
     public Page<Expense> findAllByUserIdAndFolderId(String userId, String folderId, Pageable pageable);
+
+    @Modifying
+    @Query(value = "UPDATE expenses SET folder_id = NULL where user_id = :userId AND folder_id = :folderId", nativeQuery = true)
+    public void moveExpensesToRootFolder(@Param("folderId") String folderId, @Param("userId") String userId);
 
     @Query(value = """
         SELECT

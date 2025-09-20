@@ -3,7 +3,9 @@ package com.sammedsp.fintrack.services;
 import com.sammedsp.fintrack.dtos.CreateFolderDto;
 import com.sammedsp.fintrack.entities.Folder;
 import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
+import com.sammedsp.fintrack.repositories.ExpenseRepository;
 import com.sammedsp.fintrack.repositories.FoldersRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,10 +14,12 @@ import java.util.Optional;
 @Service
 public class FolderService {
 
+    private final ExpenseRepository expenseRepository;
     private final FoldersRepository foldersRepository;
 
-    FolderService(FoldersRepository foldersRepository){
+    FolderService(FoldersRepository foldersRepository, ExpenseRepository expenseRepository){
         this.foldersRepository = foldersRepository;
+        this.expenseRepository = expenseRepository;
     }
 
     public List<Folder> getAllUsersFolders(String userId){
@@ -38,7 +42,15 @@ public class FolderService {
         return this.foldersRepository.save(folder);
     }
 
-    private Folder findByIdAndUserIdOrThrow(String id, String userId) throws EntityNotFoundException {
+    @Transactional
+    public void deleteFolderAndMoveExpensesToRootFolder(String folderId, String userId) throws EntityNotFoundException {
+        Folder folder = this.findByIdAndUserIdOrThrow(folderId, userId);
+
+        this.expenseRepository.moveExpensesToRootFolder(folderId, userId);
+        this.foldersRepository.delete(folder);
+    }
+
+    public Folder findByIdAndUserIdOrThrow(String id, String userId) throws EntityNotFoundException {
         Optional<Folder> folder = this.foldersRepository.findByIdAndUserId(id, userId);
 
         if(folder.isEmpty()){

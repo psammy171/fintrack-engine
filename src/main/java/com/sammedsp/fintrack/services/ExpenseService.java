@@ -20,17 +20,20 @@ import java.util.stream.Collectors;
 @Service
 public class ExpenseService {
 
+    private final FolderService folderService;
     private final ExpenseRepository expenseRepository;
     private final TagService tagService;
 
-    ExpenseService(ExpenseRepository expenseRepository, TagService tagService){
+    ExpenseService(ExpenseRepository expenseRepository, TagService tagService, FolderService folderService){
         this.expenseRepository = expenseRepository;
         this.tagService = tagService;
+        this.folderService = folderService;
     }
 
     public Expense createExpense(CreateExpenseDto createExpenseDto, UserContext userContext) throws EntityNotFoundException {
         String userId = userContext.userId();
-        this.tagService.findTagByIdAndUserIdOrThrow(createExpenseDto.getTagId(), userId);
+        this.validateTagIdAndFolderId(createExpenseDto, userId);
+
         Expense expense = this.createExpenseObject(createExpenseDto, userId);
         return this.expenseRepository.save(expense);
     }
@@ -52,6 +55,18 @@ public class ExpenseService {
         });
 
         return new PageResponse<ExpenseResponseDto>(expenseResponseDtoPage.getContent(),expenseResponseDtoPage.isFirst(), expenseResponseDtoPage.isLast(), expenseResponseDtoPage.getTotalElements(), expenseResponseDtoPage.getTotalPages());
+
+    }
+
+    private void validateTagIdAndFolderId(CreateExpenseDto createExpenseDto, String userId) throws EntityNotFoundException {
+        var tagId = createExpenseDto.getTagId();
+        var folderId = createExpenseDto.getFolderId();
+
+        this.tagService.findTagByIdAndUserIdOrThrow(createExpenseDto.getTagId(), userId);
+
+        if(folderId != null) {
+            this.folderService.findByIdAndUserIdOrThrow(createExpenseDto.getFolderId(), userId);
+        }
 
     }
 
