@@ -1,6 +1,7 @@
 package com.sammedsp.fintrack.controllers;
 
 import com.sammedsp.fintrack.dtos.CreateFolderDto;
+import com.sammedsp.fintrack.dtos.DeleteResponse;
 import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.entities.Folder;
 import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
@@ -47,5 +48,16 @@ public class FoldersController {
         Folder folder = this.folderService.updateFolderName(userContext.userId(), folderId, createFolderDto);
 
         return ResponseEntity.ok(folder);
+    }
+
+    @DeleteMapping("/{folderId}")
+    public ResponseEntity<DeleteResponse> deleteFolder(Authentication authentication, @PathVariable("folderId") String folderId) throws EntityNotFoundException {
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+
+        this.folderService.deleteFolderAndMoveExpensesToRootFolder(folderId, userContext.userId());
+
+        DeleteResponse deleteResponse = new DeleteResponse(Folder.class.getName(), folderId, "Folder with id " + folderId + " deleted");
+
+        return ResponseEntity.ok(deleteResponse);
     }
 }
