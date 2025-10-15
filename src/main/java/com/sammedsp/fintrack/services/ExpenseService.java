@@ -30,12 +30,15 @@ public class ExpenseService {
         this.folderService = folderService;
     }
 
-    public Expense createExpense(CreateExpenseDto createExpenseDto, UserContext userContext) throws EntityNotFoundException {
+    public ExpenseResponseDto createExpense(CreateExpenseDto createExpenseDto, UserContext userContext) throws EntityNotFoundException {
         String userId = userContext.userId();
-        this.validateTagIdAndFolderId(createExpenseDto, userId);
+        var tagLabel = this.validateTagAndGetTagLabel(createExpenseDto, userId);
+        this.validateFolderId(createExpenseDto, userId);
 
-        Expense expense = this.createExpenseObject(createExpenseDto, userId);
-        return this.expenseRepository.save(expense);
+        Expense expenseDto = this.createExpenseObject(createExpenseDto, userId);
+        Expense expense = this.expenseRepository.save(expenseDto);
+
+        return new ExpenseResponseDto(expense.getId(), expense.getRemark(), expense.getTagId(), tagLabel, expense.getAmount(), expense.getTime());
     }
 
     public PageResponse<ExpenseResponseDto> getExpense(String userId, String folderId, Pageable pageable){
@@ -58,16 +61,19 @@ public class ExpenseService {
 
     }
 
-    private void validateTagIdAndFolderId(CreateExpenseDto createExpenseDto, String userId) throws EntityNotFoundException {
+    private String validateTagAndGetTagLabel(CreateExpenseDto createExpenseDto, String userId) throws EntityNotFoundException {
         var tagId = createExpenseDto.getTagId();
-        var folderId = createExpenseDto.getFolderId();
+        var tag = this.tagService.findTagByIdAndUserIdOrThrow(tagId, userId);
 
-        this.tagService.findTagByIdAndUserIdOrThrow(createExpenseDto.getTagId(), userId);
+        return tag.getName();
+    }
+
+    private void validateFolderId(CreateExpenseDto createExpenseDto, String userId) throws EntityNotFoundException {
+        var folderId = createExpenseDto.getFolderId();
 
         if(folderId != null) {
             this.folderService.findByIdAndUserIdOrThrow(createExpenseDto.getFolderId(), userId);
         }
-
     }
 
     private Map<String, Tag> getTagsMap(String userId){

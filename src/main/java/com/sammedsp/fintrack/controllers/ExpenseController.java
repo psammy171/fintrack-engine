@@ -27,10 +27,10 @@ public class ExpenseController {
     }
 
     @PostMapping
-    public ResponseEntity<Expense> createExpense(Authentication authentication, @Valid @RequestBody CreateExpenseDto createExpenseDto) throws EntityNotFoundException {
+    public ResponseEntity<ExpenseResponseDto> createExpense(Authentication authentication, @Valid @RequestBody CreateExpenseDto createExpenseDto) throws EntityNotFoundException {
         UserContext userContext = (UserContext) authentication.getPrincipal();
-        Expense expense = this.expenseService.createExpense(createExpenseDto, userContext);
-        return ResponseEntity.ok(expense);
+        ExpenseResponseDto expenseResponse = this.expenseService.createExpense(createExpenseDto, userContext);
+        return ResponseEntity.ok(expenseResponse);
     }
 
     @GetMapping
