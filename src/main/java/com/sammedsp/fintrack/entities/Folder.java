@@ -11,6 +11,17 @@ public class Folder extends BaseEntity{
     @Column(name = "user_id")
     private String userId;
 
+    @Column(name = "is_shared")
+    private boolean isShared = false;
+
+    public boolean isShared() {
+        return isShared;
+    }
+
+    public void setShared(boolean shared) {
+        isShared = shared;
+    }
+
     public String getName() {
         return name;
     }

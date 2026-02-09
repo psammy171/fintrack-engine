@@ -50,6 +50,15 @@ public class FoldersController {
         return ResponseEntity.ok(folder);
     }
 
+    @PatchMapping("/{folderId}/share")
+    public ResponseEntity<Folder> shareFolder(Authentication authentication, @PathVariable("folderId") String folderId) throws EntityNotFoundException {
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+
+        Folder folder = this.folderService.shareFolder(userContext.userId(), folderId);
+
+        return ResponseEntity.ok(folder);
+    }
+
     @DeleteMapping("/{folderId}")
     public ResponseEntity<DeleteResponse> deleteFolder(Authentication authentication, @PathVariable("folderId") String folderId) throws EntityNotFoundException {
         UserContext userContext = (UserContext) authentication.getPrincipal();

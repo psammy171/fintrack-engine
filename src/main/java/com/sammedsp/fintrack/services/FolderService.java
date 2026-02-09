@@ -2,6 +2,7 @@ package com.sammedsp.fintrack.services;
 
 import com.sammedsp.fintrack.dtos.CreateFolderDto;
 import com.sammedsp.fintrack.entities.Folder;
+import com.sammedsp.fintrack.exceptions.BadRequestException;
 import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
 import com.sammedsp.fintrack.repositories.ExpenseRepository;
 import com.sammedsp.fintrack.repositories.FoldersRepository;
@@ -42,9 +43,20 @@ public class FolderService {
         return this.foldersRepository.save(folder);
     }
 
+    public Folder shareFolder(String userId, String folderId) throws EntityNotFoundException {
+        Folder folder = this.findByIdAndUserIdOrThrow(folderId, userId);
+        folder.setShared(true);
+
+        return this.foldersRepository.save(folder);
+    }
+
     @Transactional
     public void deleteFolderAndMoveExpensesToRootFolder(String folderId, String userId) throws EntityNotFoundException {
         Folder folder = this.findByIdAndUserIdOrThrow(folderId, userId);
+
+        if(folder.isShared()){
+            throw new BadRequestException("Shared folder can not be deleted!");
+        }
 
         this.expenseRepository.moveExpensesToRootFolder(folderId, userId);
         this.foldersRepository.delete(folder);
