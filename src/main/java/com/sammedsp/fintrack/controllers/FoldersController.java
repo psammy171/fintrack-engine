@@ -1,8 +1,6 @@
 package com.sammedsp.fintrack.controllers;
 
-import com.sammedsp.fintrack.dtos.CreateFolderDto;
-import com.sammedsp.fintrack.dtos.DeleteResponse;
-import com.sammedsp.fintrack.dtos.UserContext;
+import com.sammedsp.fintrack.dtos.*;
 import com.sammedsp.fintrack.entities.Folder;
 import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
 import com.sammedsp.fintrack.services.FolderService;
@@ -57,6 +55,24 @@ public class FoldersController {
         Folder folder = this.folderService.shareFolder(userContext.userId(), folderId);
 
         return ResponseEntity.ok(folder);
+    }
+
+    @PatchMapping("/{folderId}/add-users")
+    public ResponseEntity<ListResponse<PublicUser>> shareFolderWithUsers(Authentication authentication, @PathVariable("folderId") String folderId, @Valid @RequestBody ShareFolderWithUsersDto shareFolderWithUsersDto){
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+
+        List<PublicUser> publicUsers = this.folderService.shareFolderWithUsers(userContext.userId(), folderId, shareFolderWithUsersDto);
+
+        var listResponse = new ListResponse<>(publicUsers);
+        return ResponseEntity.ok(listResponse);
+    }
+
+    @GetMapping("/{folderId}/shared-users")
+    public ResponseEntity<ListResponse<PublicUser>> getSharedFolderUsers(Authentication authentication, @PathVariable("folderId") String folderId){
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+        var sharedFolderUsers = this.folderService.fetchSharedFolderUsers(folderId, userContext.userId());
+
+        return ResponseEntity.ok(new ListResponse<>(sharedFolderUsers));
     }
 
     @DeleteMapping("/{folderId}")
