@@ -105,7 +105,7 @@ public class FolderService {
     public List<PublicUser> fetchSharedFolderUsers(String folderId, UserContext user) {
         var userId = user.userId();
 
-       var isFolderAccessible = this.checkIdFolderIsAccessible(folderId, userId);
+       var isFolderAccessible = this.checkIfSharedFolderIsAccessible(folderId, userId);
        if(!isFolderAccessible){
            throw new BadRequestException("Folder with id " + folderId + " not found");
        }
@@ -121,8 +121,12 @@ public class FolderService {
        return this.oauth2Service.getUserInfoByUserIds(userIds);
     }
 
-    private boolean checkIdFolderIsAccessible(String folderId, String userId) {
-        return isFolderOwner(folderId, userId) || isSharedFolderUser(folderId, userId);
+    public boolean checkIfSharedFolderIsAccessible(String folderId, String userId) {
+        var folder = this.foldersRepository.findById(folderId);
+
+        if(folder.isEmpty() || !folder.get().isShared()) return false;
+
+        return isFolderOwner(folder.get(), userId) || isSharedFolderUser(folderId, userId);
     }
 
     private boolean isSharedFolderUser(String folderId, String userId) {
@@ -131,10 +135,8 @@ public class FolderService {
         return sharedFolderUser.stream().anyMatch(user -> user.getUserId().equals(userId));
     }
 
-    private boolean isFolderOwner(String folderId, String userId) {
-        Optional<Folder> folder = this.foldersRepository.findByIdAndUserId(folderId, userId);
-
-        return folder.isPresent();
+    private boolean isFolderOwner(Folder folder, String userId) {
+        return   folder.getUserId().equals(userId);
     }
 
     private String[] getNewUserIds(List<SharedFolderUser> existingSharedFolderUsers, String[] userIds){

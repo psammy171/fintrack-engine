@@ -1,16 +1,8 @@
 package com.sammedsp.fintrack.dtos;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
+public class CreateTagDto extends UpdateTagDto {
+    private String folderId;
 
-public class CreateTagDto {
+    public String getFolderId(){ return folderId;}
 
-    @NotBlank
-    @Size(min = 3, max = 50, message = "Tag should be minimum 3 characters and max 50 characters")
-    String name;
-
-    public String getName() {
-        return name;
-    }
 }

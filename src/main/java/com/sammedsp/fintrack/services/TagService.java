@@ -1,7 +1,10 @@
 package com.sammedsp.fintrack.services;
 
+import com.sammedsp.fintrack.dtos.CreateTagDto;
 import com.sammedsp.fintrack.dtos.SetTagBudgetDto;
+import com.sammedsp.fintrack.dtos.UpdateTagDto;
 import com.sammedsp.fintrack.entities.Tag;
+import com.sammedsp.fintrack.exceptions.BadRequestException;
 import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
 import com.sammedsp.fintrack.repositories.TagRepository;
 import org.springframework.stereotype.Service;
@@ -12,13 +15,15 @@ import java.util.Optional;
 @Service
 public class TagService {
     private final TagRepository tagRepository;
+    private final FolderService folderService;
 
-    TagService(TagRepository tagRepository){
+    TagService(TagRepository tagRepository, FolderService folderService){
         this.tagRepository = tagRepository;
+        this.folderService = folderService;
     }
 
-    public Tag createTag(String name, String userId){
-        Tag tag = new Tag(name, userId);
+    public Tag createTag(String userId, CreateTagDto createTagDto){
+        Tag tag = this.getTagEntity(createTagDto, userId);
         return this.tagRepository.save(tag);
     }
 
@@ -26,9 +31,9 @@ public class TagService {
         return this.tagRepository.findByUserId(userId);
     }
 
-    public Tag updateTag(String tagId, String name, String userId) throws EntityNotFoundException {
+    public Tag updateTag(String tagId, String userId, UpdateTagDto updateTagDto) throws EntityNotFoundException {
         Tag tag = this.findTagByIdAndUserIdOrThrow(tagId, userId);
-        tag.setName(name);
+        tag.setName(updateTagDto.getName());
         return this.tagRepository.save(tag);
     }
 
@@ -46,5 +51,18 @@ public class TagService {
         }
 
         return tag.get();
+    }
+
+    private Tag getTagEntity(CreateTagDto createTagDto, String userId) {
+        var folderId = createTagDto.getFolderId();
+
+        if(folderId == null) {
+            return new Tag(createTagDto.getName(), userId);
+        }
+
+        var isSharedAccessibleFolder = this.folderService.checkIfSharedFolderIsAccessible(folderId, userId);
+        if(!isSharedAccessibleFolder) throw new BadRequestException("Folder with id " + folderId + " not found");
+
+        return new Tag(createTagDto.getName(), userId, folderId);
     }
 }

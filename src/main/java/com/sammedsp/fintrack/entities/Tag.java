@@ -18,11 +18,20 @@ public class Tag extends BaseEntity {
     @Column(nullable = true)
     private Number budget;
 
+    @Column(name = "folder_id", nullable = true)
+    private String folderId;
+
     public Tag(){}
 
     public Tag(String name, String userId){
         this.name = name;
         this.userId = userId;
+    }
+
+    public Tag(String name, String userId, String folderId){
+        this.name = name;
+        this.userId = userId;
+        this.folderId = folderId;
     }
 
     public String getUserId() {
@@ -55,5 +64,13 @@ public class Tag extends BaseEntity {
 
     public void setBudget(Number budget) {
         this.budget = budget;
+    }
+
+    public String getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(String folderId) {
+        this.folderId = folderId;
     }
 }
