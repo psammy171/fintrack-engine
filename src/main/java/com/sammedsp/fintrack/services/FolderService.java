@@ -3,6 +3,7 @@ package com.sammedsp.fintrack.services;
 import com.sammedsp.fintrack.dtos.CreateFolderDto;
 import com.sammedsp.fintrack.dtos.PublicUser;
 import com.sammedsp.fintrack.dtos.ShareFolderWithUsersDto;
+import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.entities.Folder;
 import com.sammedsp.fintrack.entities.SharedFolderUser;
 import com.sammedsp.fintrack.exceptions.BadRequestException;
@@ -36,7 +37,11 @@ public class FolderService {
     }
 
     public List<Folder> getAllUsersFolders(String userId){
-        return this.foldersRepository.findAllByUserId(userId);
+        var folders = this.foldersRepository.findAllByUserId(userId);
+        var sharedFolders = this.getSharedFolders(userId);
+
+        folders.addAll(sharedFolders);
+        return folders;
     }
 
     public Folder createFolder(String userId, CreateFolderDto createFolderDto){
@@ -106,21 +111,23 @@ public class FolderService {
         return userProfiles;
     }
 
-    public List<PublicUser> fetchSharedFolderUsers(String folderId, String userId) {
+    public List<PublicUser> fetchSharedFolderUsers(String folderId, UserContext user) {
+        var userId = user.userId();
+
        var isFolderAccessible = this.checkIdFolderIsAccessible(folderId, userId);
        if(!isFolderAccessible){
            throw new BadRequestException("Folder with id " + folderId + " not found");
        }
 
+       var folder = this.findByIdOrThrow(folderId);
+
        var sharedFolderUsers = this.sharedFolderUserRepository.findAllByFolderId(folderId);
+       sharedFolderUsers.add(this.getSharedFolderUser(folderId, folder.getUserId()));
+
        var userIds = sharedFolderUsers.stream().map(SharedFolderUser::getUserId).toArray(String[]::new);
 
-       if(userIds.length == 0){
-           return List.of();
-       }
 
-       var users = this.oauth2Service.getUserInfoByUserIds(userIds);
-       return users.stream().filter(user -> !user.userId().equals(userId)).toList();
+       return this.oauth2Service.getUserInfoByUserIds(userIds);
     }
 
     private boolean checkIdFolderIsAccessible(String folderId, String userId) {
@@ -138,7 +145,6 @@ public class FolderService {
 
         return folder.isPresent();
     }
-
 
     private String[] getNewUserIds(List<SharedFolderUser> existingSharedFolderUsers, String[] userIds){
         Set<String> existingIds = existingSharedFolderUsers.stream()
@@ -159,17 +165,35 @@ public class FolderService {
     }
 
     private void shareFolder(String folderId, List<PublicUser> userProfiles) {
-        List<SharedFolderUser> sharedFolderUsers = userProfiles.stream().map(user -> this.getSharedFolderUser(folderId, user)).toList();
+        List<SharedFolderUser> sharedFolderUsers = userProfiles.stream().map(user -> this.getSharedFolderUser(folderId, user.userId())).toList();
 
         this.sharedFolderUserRepository.saveAll(sharedFolderUsers);
     }
 
-    private SharedFolderUser getSharedFolderUser(String folderId, PublicUser user) {
+    private SharedFolderUser getSharedFolderUser(String folderId, String userId) {
         var sharedUser = new SharedFolderUser();
 
         sharedUser.setFolderId(folderId);
-        sharedUser.setUserId(user.userId());
+        sharedUser.setUserId(userId);
 
         return sharedUser;
+    }
+
+    private List<Folder> getSharedFolders(String userId) {
+        var sharedFolders = this.sharedFolderUserRepository.findAllByUserId(userId);
+
+        var folderIds = sharedFolders.stream().map(SharedFolderUser::getFolderId).toList();
+
+        return this.foldersRepository.findAllByIdIn(folderIds);
+    }
+
+    private Folder findByIdOrThrow(String folderId) {
+        var folder = this.foldersRepository.findById(folderId);
+
+        if(folder.isPresent()){
+            return folder.get();
+        }
+
+        throw new BadRequestException("Folder with id " + folderId + " not found");
     }
 }
