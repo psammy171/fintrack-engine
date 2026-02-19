@@ -1,9 +1,6 @@
 package com.sammedsp.fintrack.services;
 
-import com.sammedsp.fintrack.dtos.CreateFolderDto;
-import com.sammedsp.fintrack.dtos.PublicUser;
-import com.sammedsp.fintrack.dtos.ShareFolderWithUsersDto;
-import com.sammedsp.fintrack.dtos.UserContext;
+import com.sammedsp.fintrack.dtos.*;
 import com.sammedsp.fintrack.entities.Folder;
 import com.sammedsp.fintrack.entities.SharedFolderUser;
 import com.sammedsp.fintrack.exceptions.BadRequestException;
@@ -53,10 +50,10 @@ public class FolderService {
         return this.foldersRepository.save(folder);
     }
 
-    public Folder updateFolderName(String userId, String folderId, CreateFolderDto createFolderDto) throws EntityNotFoundException {
+    public Folder updateFolderName(String userId, String folderId, UpdateFolderDto updateFolderDto) throws EntityNotFoundException {
         Folder folder = this.findByIdAndUserIdOrThrow(folderId, userId);
 
-        folder.setName(createFolderDto.getName());
+        folder.setName(updateFolderDto.getName());
 
         return this.foldersRepository.save(folder);
     }

@@ -40,10 +40,10 @@ public class FoldersController {
     }
 
     @PatchMapping("/{folderId}")
-    public ResponseEntity<Folder> updateFolder(Authentication authentication, @Valid @RequestBody CreateFolderDto createFolderDto, @PathVariable("folderId") String folderId) throws EntityNotFoundException {
+    public ResponseEntity<Folder> updateFolder(Authentication authentication, @Valid @RequestBody UpdateFolderDto updateFolderDto, @PathVariable("folderId") String folderId) throws EntityNotFoundException {
         UserContext userContext = (UserContext) authentication.getPrincipal();
 
-        Folder folder = this.folderService.updateFolderName(userContext.userId(), folderId, createFolderDto);
+        Folder folder = this.folderService.updateFolderName(userContext.userId(), folderId, updateFolderDto);
 
         return ResponseEntity.ok(folder);
     }
