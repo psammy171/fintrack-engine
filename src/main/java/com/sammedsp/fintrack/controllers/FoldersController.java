@@ -48,15 +48,6 @@ public class FoldersController {
         return ResponseEntity.ok(folder);
     }
 
-    @PatchMapping("/{folderId}/share")
-    public ResponseEntity<Folder> shareFolder(Authentication authentication, @PathVariable("folderId") String folderId) throws EntityNotFoundException {
-        UserContext userContext = (UserContext) authentication.getPrincipal();
-
-        Folder folder = this.folderService.shareFolder(userContext.userId(), folderId);
-
-        return ResponseEntity.ok(folder);
-    }
-
     @PatchMapping("/{folderId}/add-users")
     public ResponseEntity<ListResponse<PublicUser>> shareFolderWithUsers(Authentication authentication, @PathVariable("folderId") String folderId, @Valid @RequestBody ShareFolderWithUsersDto shareFolderWithUsersDto){
         UserContext userContext = (UserContext) authentication.getPrincipal();

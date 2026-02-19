@@ -9,7 +9,11 @@ public class CreateFolderDto {
     @Size(min = 3, max = 50, message = "Folder name should be minimum 3 characters and max 50 characters")
     private String name;
 
+    private boolean shared;
+
     public String getName() {
         return name;
     }
+
+    public boolean isShared(){ return shared;}
 }

@@ -48,6 +48,7 @@ public class FolderService {
         Folder folder = new Folder();
         folder.setUserId(userId);
         folder.setName(createFolderDto.getName());
+        folder.setShared(createFolderDto.isShared());
 
         return this.foldersRepository.save(folder);
     }
@@ -56,13 +57,6 @@ public class FolderService {
         Folder folder = this.findByIdAndUserIdOrThrow(folderId, userId);
 
         folder.setName(createFolderDto.getName());
-
-        return this.foldersRepository.save(folder);
-    }
-
-    public Folder shareFolder(String userId, String folderId) throws EntityNotFoundException {
-        Folder folder = this.findByIdAndUserIdOrThrow(folderId, userId);
-        folder.setShared(true);
 
         return this.foldersRepository.save(folder);
     }
