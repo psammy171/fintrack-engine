@@ -27,8 +27,12 @@ public class TagService {
         return this.tagRepository.save(tag);
     }
 
-    public List<Tag> getAllUserTags(String userId){
-        return this.tagRepository.findByUserId(userId);
+    public List<Tag> getAllTags(String userId, String folderId){
+        if(folderId == null)
+            return this.tagRepository.findByUserIdAndFolderIdIsNull(userId);
+
+        folderService.checkFolderAccessOrThrow(folderId, userId);
+        return this.tagRepository.findByFolderId(folderId);
     }
 
     public Tag updateTag(String tagId, String userId, UpdateTagDto updateTagDto) throws EntityNotFoundException {

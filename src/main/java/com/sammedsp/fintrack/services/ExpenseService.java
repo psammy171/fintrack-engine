@@ -44,7 +44,7 @@ public class ExpenseService {
     public PageResponse<ExpenseResponseDto> getExpense(String userId, String folderId, Pageable pageable){
         Page<Expense> paginatedExpense =  this.expenseRepository.findAllByUserIdAndFolderId(userId, folderId, pageable);
 
-        Map<String, Tag> tagsMap = this.getTagsMap(userId);
+        Map<String, Tag> tagsMap = this.getTagsMap(userId, folderId);
 
         Page<ExpenseResponseDto> expenseResponseDtoPage =  paginatedExpense.map(expense -> {
             String tagName = null;
@@ -76,8 +76,8 @@ public class ExpenseService {
         }
     }
 
-    private Map<String, Tag> getTagsMap(String userId){
-        List<Tag> tags = this.tagService.getAllUserTags(userId);
+    private Map<String, Tag> getTagsMap(String userId, String folderId){
+        List<Tag> tags = this.tagService.getAllTags(userId, folderId);
         return tags.stream()
                 .collect(Collectors.toMap(Tag::getId, Function.identity()));
     }

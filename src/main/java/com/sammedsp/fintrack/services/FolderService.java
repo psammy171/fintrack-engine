@@ -121,6 +121,13 @@ public class FolderService {
        return this.oauth2Service.getUserInfoByUserIds(userIds);
     }
 
+    public void checkFolderAccessOrThrow(String folderId, String userId) {
+        var isFolderAccessible = this.checkIfSharedFolderIsAccessible(folderId, userId);
+
+        if(!isFolderAccessible)
+            throw new BadRequestException("Folder with id " + folderId + " not found!");
+    }
+
     public boolean checkIfSharedFolderIsAccessible(String folderId, String userId) {
         var folder = this.foldersRepository.findById(folderId);
 

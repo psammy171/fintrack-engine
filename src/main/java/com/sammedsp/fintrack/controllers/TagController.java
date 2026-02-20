@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/api/tags")
@@ -26,10 +27,10 @@ public class TagController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Tag>> getAllUserTags(Authentication authentication){
+    public ResponseEntity<List<Tag>> getAllUserTags(Authentication authentication, @RequestParam(value = "folderId", required = false) String folderId){
         UserContext userContext = (UserContext) authentication.getPrincipal();
         String userId = userContext.userId();
-        List<Tag> tags = this.tagService.getAllUserTags(userId);
+        List<Tag> tags = this.tagService.getAllTags(userId, folderId);
         return ResponseEntity.ok(tags);
     }
 
