@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface TagRepository extends JpaRepository<Tag, String> {
 
+    public List<Tag> findByUserId(String userId);
+
     public List<Tag> findByUserIdAndFolderIdIsNull(String userId);
 
     public List<Tag> findByFolderId(String folderId);

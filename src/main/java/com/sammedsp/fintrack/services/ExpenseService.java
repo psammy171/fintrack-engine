@@ -42,6 +42,10 @@ public class ExpenseService {
     }
 
     public PageResponse<ExpenseResponseDto> getExpense(String userId, String folderId, Pageable pageable){
+        if(folderId != null){
+            this.folderService.checkFolderAccess(folderId, userId);
+        }
+
         Page<Expense> paginatedExpense =  this.expenseRepository.findAllByUserIdAndFolderId(userId, folderId, pageable);
 
         Map<String, Tag> tagsMap = this.getTagsMap(userId, folderId);
@@ -77,7 +81,7 @@ public class ExpenseService {
     }
 
     private Map<String, Tag> getTagsMap(String userId, String folderId){
-        List<Tag> tags = this.tagService.getAllTags(userId, folderId);
+        List<Tag> tags = this.tagService.getAllTags(userId, folderId, "");
         return tags.stream()
                 .collect(Collectors.toMap(Tag::getId, Function.identity()));
     }

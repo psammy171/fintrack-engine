@@ -22,10 +22,10 @@ public class FoldersController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<Folder>> getUsersFolders(Authentication authentication){
+    public ResponseEntity<List<Folder>> getUsersFolders(Authentication authentication, @RequestParam(value = "scope", required = false) String scope){
         UserContext userContext = (UserContext) authentication.getPrincipal();
 
-        List<Folder> folders = this.folderService.getAllUsersFolders(userContext.userId());
+        List<Folder> folders = this.folderService.getAllUsersFolders(userContext.userId(), scope);
 
         return ResponseEntity.ok(folders);
     }

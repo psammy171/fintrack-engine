@@ -27,11 +27,13 @@ public class TagService {
         return this.tagRepository.save(tag);
     }
 
-    public List<Tag> getAllTags(String userId, String folderId){
+    public List<Tag> getAllTags(String userId, String folderId, String scope){
+        if("owned".equals(scope)) return this.tagRepository.findByUserId(userId);
+
         if(folderId == null)
             return this.tagRepository.findByUserIdAndFolderIdIsNull(userId);
 
-        folderService.checkFolderAccessOrThrow(folderId, userId);
+        folderService.checkFolderAccess(folderId, userId);
         return this.tagRepository.findByFolderId(folderId);
     }
 
@@ -64,7 +66,7 @@ public class TagService {
             return new Tag(createTagDto.getName(), userId);
         }
 
-        var isSharedAccessibleFolder = this.folderService.checkIfSharedFolderIsAccessible(folderId, userId);
+        var isSharedAccessibleFolder = this.folderService.isSharedFolderOwner(folderId, userId);
         if(!isSharedAccessibleFolder) throw new BadRequestException("Folder with id " + folderId + " not found");
 
         return new Tag(createTagDto.getName(), userId, folderId);
