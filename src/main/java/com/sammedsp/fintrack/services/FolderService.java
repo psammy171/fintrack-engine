@@ -3,11 +3,13 @@ package com.sammedsp.fintrack.services;
 import com.sammedsp.fintrack.dtos.*;
 import com.sammedsp.fintrack.entities.Folder;
 import com.sammedsp.fintrack.entities.SharedFolderUser;
+import com.sammedsp.fintrack.entities.UserSettlement;
 import com.sammedsp.fintrack.exceptions.BadRequestException;
 import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
 import com.sammedsp.fintrack.repositories.ExpenseRepository;
 import com.sammedsp.fintrack.repositories.FoldersRepository;
 import com.sammedsp.fintrack.repositories.SharedFolderUserRepository;
+import com.sammedsp.fintrack.repositories.UserSettlementRepository;
 import com.sammedsp.fintrack.security.Oauth2Service;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -21,13 +23,28 @@ public class FolderService {
     private final ExpenseRepository expenseRepository;
     private final FoldersRepository foldersRepository;
     private final Oauth2Service oauth2Service;
+    private final UserSettlementRepository userSettlementRepository;
     private final SharedFolderUserRepository sharedFolderUserRepository;
 
-    FolderService(FoldersRepository foldersRepository, ExpenseRepository expenseRepository, SharedFolderUserRepository sharedFolderUserRepository, Oauth2Service oauth2Service){
+    FolderService(FoldersRepository foldersRepository, ExpenseRepository expenseRepository, SharedFolderUserRepository sharedFolderUserRepository, Oauth2Service oauth2Service, UserSettlementRepository userSettlementRepository){
         this.foldersRepository = foldersRepository;
         this.expenseRepository = expenseRepository;
         this.sharedFolderUserRepository = sharedFolderUserRepository;
         this.oauth2Service = oauth2Service;
+        this.userSettlementRepository = userSettlementRepository;
+    }
+
+    public FolderSettlements getSharedFolderSettlements(String folderId, String userId) {
+        var folder = this.findFolderWithUserAccess(folderId, userId);
+
+        if(!folder.isShared()){
+            throw new BadRequestException("Folder with id " + folderId + " not found");
+        }
+
+        var sharedFolderUsers = this.fetchSharedFolderUsers(folderId, userId);
+        var userSettlements = this.userSettlementRepository.findByFolderId(folderId);
+
+        return this.mapUserSettlementsAndSharedUser(userSettlements, sharedFolderUsers);
     }
 
     public List<Folder> getAllUsersFolders(String userId, String scope){
@@ -102,9 +119,7 @@ public class FolderService {
         return userProfiles;
     }
 
-    public List<PublicUser> fetchSharedFolderUsers(String folderId, UserContext user) {
-        String userId = user.userId();
-
+    public List<PublicUser> fetchSharedFolderUsers(String folderId, String userId) {
        var isFolderAccessible = this.checkIfSharedFolderIsAccessible(folderId, userId);
        if(!isFolderAccessible){
            throw new BadRequestException("Folder with id " + folderId + " not found");
@@ -154,6 +169,16 @@ public class FolderService {
         }
 
         return folder;
+    }
+
+    public Folder findByIdOrThrow(String folderId) {
+        var folder = this.foldersRepository.findById(folderId);
+
+        if(folder.isPresent()){
+            return folder.get();
+        }
+
+        throw new BadRequestException("Folder with id " + folderId + " not found");
     }
 
     private boolean checkIfSharedFolderIsAccessible(String folderId, String userId) {
@@ -221,13 +246,31 @@ public class FolderService {
         return this.foldersRepository.findAllByIdIn(folderIds);
     }
 
-    public Folder findByIdOrThrow(String folderId) {
-        var folder = this.foldersRepository.findById(folderId);
+    private FolderSettlements mapUserSettlementsAndSharedUser(List<UserSettlement> userSettlements, List<PublicUser> sharedFolderUsers) {
+        var positiveUserSettlements = userSettlements.stream().filter(settlement -> settlement.getAmount() > 0).toList();
 
-        if(folder.isPresent()){
-            return folder.get();
+        ArrayList<SettlementResponse> settlements  = new ArrayList<>();
+
+        for(UserSettlement userSettlement: positiveUserSettlements) {
+            var creditor = this.findUser(sharedFolderUsers, userSettlement.getCreditorId());
+            var debitor = this.findUser(sharedFolderUsers, userSettlement.getDebitorId());
+            var amount = userSettlement.getAmount();
+            var settlement = new SettlementResponse(creditor, debitor, amount);
+
+            settlements.add(settlement);
         }
 
-        throw new BadRequestException("Folder with id " + folderId + " not found");
+        return new FolderSettlements(settlements);
+    }
+
+    private PublicUser findUser( List<PublicUser> sharedFolderUsers, String userId) {
+        var user = sharedFolderUsers.stream().filter(sharedUser -> sharedUser.userId().equals(userId)).findAny();
+
+        if(user.isEmpty()){
+            throw new BadRequestException("Something went wrong while fetching settlements");
+        }
+
+        return user.get();
+
     }
 }

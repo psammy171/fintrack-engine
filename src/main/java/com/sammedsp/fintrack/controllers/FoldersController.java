@@ -61,9 +61,17 @@ public class FoldersController {
     @GetMapping("/{folderId}/shared-users")
     public ResponseEntity<ListResponse<PublicUser>> getSharedFolderUsers(Authentication authentication, @PathVariable("folderId") String folderId){
         UserContext userContext = (UserContext) authentication.getPrincipal();
-        var sharedFolderUsers = this.folderService.fetchSharedFolderUsers(folderId, userContext);
+        var sharedFolderUsers = this.folderService.fetchSharedFolderUsers(folderId, userContext.userId());
 
         return ResponseEntity.ok(new ListResponse<>(sharedFolderUsers));
+    }
+
+    @GetMapping("/{folderId}/settlements")
+    public ResponseEntity<FolderSettlements> getSharedFolderSettlements(Authentication authentication, @PathVariable("folderId") String folderId){
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+        var folderSettlements = this.folderService.getSharedFolderSettlements(folderId, userContext.userId());
+
+        return ResponseEntity.ok(folderSettlements);
     }
 
     @DeleteMapping("/{folderId}")
