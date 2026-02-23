@@ -15,7 +15,9 @@ import java.util.List;
 public interface ExpenseRepository extends JpaRepository<Expense, String> {
     public Page<Expense> findAllByUserId(String userId, Pageable pageable);
 
-    public Page<Expense> findAllByUserIdAndFolderId(String userId, String folderId, Pageable pageable);
+    public Page<Expense> findAllByUserIdAndFolderIdIsNull(String userId, Pageable pageable);
+
+    public Page<Expense> findAllByFolderId(String folderId, Pageable pageable);
 
     @Modifying
     @Query(value = "UPDATE expenses SET folder_id = NULL where user_id = :userId AND folder_id = :folderId", nativeQuery = true)

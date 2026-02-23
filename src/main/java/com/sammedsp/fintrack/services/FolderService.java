@@ -12,10 +12,7 @@ import com.sammedsp.fintrack.security.Oauth2Service;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -106,7 +103,7 @@ public class FolderService {
     }
 
     public List<PublicUser> fetchSharedFolderUsers(String folderId, UserContext user) {
-        var userId = user.userId();
+        String userId = user.userId();
 
        var isFolderAccessible = this.checkIfSharedFolderIsAccessible(folderId, userId);
        if(!isFolderAccessible){
@@ -124,6 +121,16 @@ public class FolderService {
        return this.oauth2Service.getUserInfoByUserIds(userIds);
     }
 
+    public List<String> fetchSharedFolderUserIds(String folderId){
+        var folder = this.findByIdOrThrow(folderId);
+        var sharedFolderUsers = this.sharedFolderUserRepository.findAllByFolderId(folderId);
+
+        List<String> userIds = new ArrayList<>(sharedFolderUsers.stream().map(SharedFolderUser::getUserId).toList());
+        userIds.add(folder.getUserId());
+
+        return userIds;
+    }
+
     public void checkSharedFolderAccessOrThrow(String folderId, String userId) {
         var isFolderAccessible = this.checkIfSharedFolderIsAccessible(folderId, userId);
 
@@ -131,10 +138,10 @@ public class FolderService {
             throw new BadRequestException("Folder with id " + folderId + " not found!");
     }
 
-    public void checkFolderAccess(String folderId, String userId) {
+    public Folder findFolderWithUserAccess(String folderId, String userId) {
         var folder = this.findByIdOrThrow(folderId);
 
-        if(isFolderOwner(folder, userId)) return;
+        if(isFolderOwner(folder, userId)) return folder;
 
         if(!folder.isShared()){
             throw new BadRequestException("Folder with id " + folderId + " not found");
@@ -145,6 +152,8 @@ public class FolderService {
         if(!isSharedFolder) {
             throw new BadRequestException("Folder with id " + folderId + " not found");
         }
+
+        return folder;
     }
 
     private boolean checkIfSharedFolderIsAccessible(String folderId, String userId) {
@@ -212,7 +221,7 @@ public class FolderService {
         return this.foldersRepository.findAllByIdIn(folderIds);
     }
 
-    private Folder findByIdOrThrow(String folderId) {
+    public Folder findByIdOrThrow(String folderId) {
         var folder = this.foldersRepository.findById(folderId);
 
         if(folder.isPresent()){

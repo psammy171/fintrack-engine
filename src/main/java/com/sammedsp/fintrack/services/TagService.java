@@ -33,8 +33,25 @@ public class TagService {
         if(folderId == null)
             return this.tagRepository.findByUserIdAndFolderIdIsNull(userId);
 
-        folderService.checkFolderAccess(folderId, userId);
         return this.tagRepository.findByFolderId(folderId);
+    }
+
+    public List<Tag> findUserTags(String userId) {
+        return this.tagRepository.findByUserIdAndFolderIdIsNull(userId);
+    }
+
+    public List<Tag> findSharedFolderTag(String folderId) {
+        return this.tagRepository.findByFolderId(folderId);
+    }
+
+    public Tag findByIdAndFolderIdOrThrow(String id, String folderId) {
+        Optional<Tag> tag = this.tagRepository.findByIdAndFolderId(id, folderId);
+
+        if(tag.isEmpty()){
+            throw new BadRequestException("Tag with id " + id + " not found");
+        }
+
+        return tag.get();
     }
 
     public Tag updateTag(String tagId, String userId, UpdateTagDto updateTagDto) throws EntityNotFoundException {

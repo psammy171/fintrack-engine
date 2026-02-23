@@ -73,4 +73,12 @@ public class Expense extends BaseEntity {
     public void setTime(LocalDateTime time) {
         this.time = time;
     }
+
+    public String getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(String folderId) {
+        this.folderId = folderId;
+    }
 }
