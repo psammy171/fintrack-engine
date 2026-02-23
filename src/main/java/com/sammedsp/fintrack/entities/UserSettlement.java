@@ -2,8 +2,8 @@ package com.sammedsp.fintrack.entities;
 
 import jakarta.persistence.Entity;
 
-@Entity(name = "balance_engine")
-public class BalanceEngine extends BaseEntity {
+@Entity(name = "user_settlements")
+public class UserSettlement extends BaseEntity {
     String folderId;
 
     String creditorId;
@@ -12,9 +12,9 @@ public class BalanceEngine extends BaseEntity {
 
     Float amount;
 
-    public BalanceEngine(){}
+    public UserSettlement(){}
 
-    public BalanceEngine(String folderId, String creditorId, String debitorId, Float amount) {
+    public UserSettlement(String folderId, String creditorId, String debitorId, Float amount) {
         this.folderId = folderId;
         this.creditorId = creditorId;
         this.debitorId = debitorId;

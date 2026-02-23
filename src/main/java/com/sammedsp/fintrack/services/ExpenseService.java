@@ -4,7 +4,7 @@ import com.sammedsp.fintrack.dtos.*;
 import com.sammedsp.fintrack.entities.*;
 import com.sammedsp.fintrack.exceptions.BadRequestException;
 import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
-import com.sammedsp.fintrack.repositories.BalanceEngineRepository;
+import com.sammedsp.fintrack.repositories.UserSettlementRepository;
 import com.sammedsp.fintrack.repositories.ExpenseRepository;
 import com.sammedsp.fintrack.repositories.ExpenseShareRepository;
 import jakarta.transaction.Transactional;
@@ -25,14 +25,14 @@ public class ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final TagService tagService;
     private final ExpenseShareRepository expenseShareRepository;
-    private final BalanceEngineRepository balanceEngineRepository;
+    private final UserSettlementRepository userSettlementRepository;
 
-    ExpenseService(ExpenseRepository expenseRepository, TagService tagService, FolderService folderService, ExpenseShareRepository expenseShareRepository, BalanceEngineRepository balanceEngineRepository){
+    ExpenseService(ExpenseRepository expenseRepository, TagService tagService, FolderService folderService, ExpenseShareRepository expenseShareRepository, UserSettlementRepository userSettlementRepository){
         this.expenseRepository = expenseRepository;
         this.tagService = tagService;
         this.folderService = folderService;
         this.expenseShareRepository = expenseShareRepository;
-        this.balanceEngineRepository = balanceEngineRepository;
+        this.userSettlementRepository = userSettlementRepository;
     }
 
     @Transactional
@@ -152,7 +152,7 @@ public class ExpenseService {
     }
 
     private void updateSettlements(String folderId, String paidBy, List<UserShareDto> userShares) {
-        var userSettlements = this.balanceEngineRepository.findByFolderId(folderId);
+        var userSettlements = this.userSettlementRepository.findByFolderId(folderId);
 
         var newUserSettlements = new ArrayList<>(userSettlements);
         for(UserShareDto userShare: userShares) {
@@ -165,14 +165,14 @@ public class ExpenseService {
             debitorSettlement.setAmount(debitorSettlement.getAmount() - userShare.getAmount());
         }
 
-        this.balanceEngineRepository.saveAll(newUserSettlements);
+        this.userSettlementRepository.saveAll(newUserSettlements);
     }
 
-    private BalanceEngine findBalanceEngineOrDefault(List<BalanceEngine> userSettlements, String paidBy, String paidFor, String folderId) {
+    private UserSettlement findBalanceEngineOrDefault(List<UserSettlement> userSettlements, String paidBy, String paidFor, String folderId) {
         var userSettlement = userSettlements.stream().filter(settlement -> settlement.getCreditorId().equals(paidBy) && settlement.getDebitorId().equals(paidFor)).findAny();
 
         if(userSettlement.isEmpty()){
-            var balanceEngine = new BalanceEngine(folderId, paidBy, paidFor, 0F);
+            var balanceEngine = new UserSettlement(folderId, paidBy, paidFor, 0F);
             userSettlements.add(balanceEngine);
 
             return balanceEngine;
