@@ -74,6 +74,12 @@ public class FoldersController {
         return ResponseEntity.ok(folderSettlements);
     }
 
+    @PatchMapping("/{folderId}/settlements/resolve")
+    public void resolveSharedFolderSettlements(Authentication authentication, @PathVariable("folderId") String folderId, @Valid @RequestBody ResolveSettlementDto resolveSettlementDto){
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+        this.folderService.resolveUserSettlements(folderId, userContext.userId(),resolveSettlementDto.getUserId());
+    }
+
     @DeleteMapping("/{folderId}")
     public ResponseEntity<DeleteResponse> deleteFolder(Authentication authentication, @PathVariable("folderId") String folderId) throws EntityNotFoundException {
         UserContext userContext = (UserContext) authentication.getPrincipal();

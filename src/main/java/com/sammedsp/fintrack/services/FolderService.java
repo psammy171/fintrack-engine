@@ -181,6 +181,25 @@ public class FolderService {
         throw new BadRequestException("Folder with id " + folderId + " not found");
     }
 
+    public void resolveUserSettlements(String folderId, String creditorId, String debitorId) {
+        this.checkSharedFolderAccessOrThrow(folderId, creditorId);
+        this.checkSharedFolderAccessOrThrow(folderId, debitorId);
+
+        var creditorSettlement = this.userSettlementRepository.findByFolderIdAndCreditorIdAndDebitorId(folderId, creditorId, debitorId);
+        if(creditorSettlement.isPresent()){
+            var settlement = creditorSettlement.get();
+            settlement.setAmount(0F);
+            this.userSettlementRepository.save(settlement);
+        }
+
+        var debitorSettlement = this.userSettlementRepository.findByFolderIdAndCreditorIdAndDebitorId(folderId, debitorId, creditorId);
+        if(debitorSettlement.isPresent()){
+            var settlement = debitorSettlement.get();
+            settlement.setAmount(0F);
+            this.userSettlementRepository.save(settlement);
+        }
+    }
+
     private boolean checkIfSharedFolderIsAccessible(String folderId, String userId) {
         var folder = this.findByIdOrThrow(folderId);
 
