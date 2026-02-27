@@ -1,14 +1,14 @@
 package com.sammedsp.fintrack.security;
 
-import com.sammedsp.fintrack.dtos.AuthorizeCodeDto;
-import com.sammedsp.fintrack.dtos.AuthorizeCodeResponseDto;
-import com.sammedsp.fintrack.dtos.UserContext;
-import com.sammedsp.fintrack.dtos.UserProfileRequest;
+import com.sammedsp.fintrack.dtos.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,6 +43,56 @@ public class Oauth2Service {
             return Optional.empty();
         }
         return Optional.empty();
+    }
+
+    public List<PublicUser> searchUserInfo(String search) {
+        try {
+
+            String profileUrl = UriComponentsBuilder.fromUriString(accountsUrl).path("/users")
+                    .queryParam("search", search)
+                    .build()
+                    .toUriString();
+
+            HttpHeaders headers = this.getHttpHeaders();
+
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<ListResponse<PublicUser>> response = restTemplate.exchange(profileUrl, HttpMethod.GET, entity, new ParameterizedTypeReference<ListResponse<PublicUser>>() {});
+
+            ListResponse<PublicUser> publicUserResponse = response.getBody();
+
+            if(publicUserResponse != null )
+                return publicUserResponse.data();
+        }catch (Exception e){
+            return List.of();
+        }
+
+        return List.of();
+    }
+
+    public List<PublicUser> getUserInfoByUserIds(String[] userIds) {
+        try {
+
+            String profileUrl = accountsUrl + "/users";
+
+            HttpHeaders headers = this.getHttpHeaders();
+
+            PublicUserProfilesRequest publicUserProfilesRequest = new PublicUserProfilesRequest(userIds);
+            HttpEntity<PublicUserProfilesRequest> entity = new HttpEntity<>(publicUserProfilesRequest, headers);
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<ListResponse<PublicUser>> response = restTemplate.exchange(profileUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<ListResponse<PublicUser>>() {});
+
+            ListResponse<PublicUser> publicUserResponse = response.getBody();
+
+            if(publicUserResponse != null )
+                return publicUserResponse.data();
+        }catch (Exception e){
+            return List.of();
+        }
+
+        return List.of();
     }
 
     public AuthorizeCodeResponseDto authorizeCode(String code){

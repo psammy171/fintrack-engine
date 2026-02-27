@@ -1,10 +1,12 @@
 package com.sammedsp.fintrack.dtos;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class CreateExpenseDto {
 
@@ -21,6 +23,11 @@ public class CreateExpenseDto {
     Float amount;
 
     String folderId;
+
+    String paidBy;
+
+    @Valid
+    List<UserShareDto> userShares;
 
     public String getTagId() {
         return tagId;
@@ -40,5 +47,11 @@ public class CreateExpenseDto {
 
     public String getFolderId() {
         return folderId;
+    }
+
+    public String getPaidBy(){return paidBy;}
+
+    public List<UserShareDto> getUserShares() {
+        return userShares;
     }
 }

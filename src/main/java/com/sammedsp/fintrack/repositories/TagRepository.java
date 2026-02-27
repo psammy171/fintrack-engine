@@ -10,5 +10,11 @@ public interface TagRepository extends JpaRepository<Tag, String> {
 
     public List<Tag> findByUserId(String userId);
 
+    public List<Tag> findByUserIdAndFolderIdIsNull(String userId);
+
+    public List<Tag> findByFolderId(String folderId);
+
+    public Optional<Tag> findByIdAndFolderId(String id, String folderId);
+
     public Optional<Tag> findByIdAndUserId(String id, String userId);
 }

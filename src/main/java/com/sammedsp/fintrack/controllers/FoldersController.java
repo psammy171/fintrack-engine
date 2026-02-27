@@ -1,8 +1,6 @@
 package com.sammedsp.fintrack.controllers;
 
-import com.sammedsp.fintrack.dtos.CreateFolderDto;
-import com.sammedsp.fintrack.dtos.DeleteResponse;
-import com.sammedsp.fintrack.dtos.UserContext;
+import com.sammedsp.fintrack.dtos.*;
 import com.sammedsp.fintrack.entities.Folder;
 import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
 import com.sammedsp.fintrack.services.FolderService;
@@ -24,10 +22,10 @@ public class FoldersController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<Folder>> getUsersFolders(Authentication authentication){
+    public ResponseEntity<List<Folder>> getUsersFolders(Authentication authentication, @RequestParam(value = "scope", required = false) String scope){
         UserContext userContext = (UserContext) authentication.getPrincipal();
 
-        List<Folder> folders = this.folderService.getAllUsersFolders(userContext.userId());
+        List<Folder> folders = this.folderService.getAllUsersFolders(userContext.userId(), scope);
 
         return ResponseEntity.ok(folders);
     }
@@ -42,12 +40,44 @@ public class FoldersController {
     }
 
     @PatchMapping("/{folderId}")
-    public ResponseEntity<Folder> updateFolder(Authentication authentication, @Valid @RequestBody CreateFolderDto createFolderDto, @PathVariable("folderId") String folderId) throws EntityNotFoundException {
+    public ResponseEntity<Folder> updateFolder(Authentication authentication, @Valid @RequestBody UpdateFolderDto updateFolderDto, @PathVariable("folderId") String folderId) throws EntityNotFoundException {
         UserContext userContext = (UserContext) authentication.getPrincipal();
 
-        Folder folder = this.folderService.updateFolderName(userContext.userId(), folderId, createFolderDto);
+        Folder folder = this.folderService.updateFolderName(userContext.userId(), folderId, updateFolderDto);
 
         return ResponseEntity.ok(folder);
+    }
+
+    @PatchMapping("/{folderId}/add-users")
+    public ResponseEntity<ListResponse<PublicUser>> shareFolderWithUsers(Authentication authentication, @PathVariable("folderId") String folderId, @Valid @RequestBody ShareFolderWithUsersDto shareFolderWithUsersDto){
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+
+        List<PublicUser> publicUsers = this.folderService.shareFolderWithUsers(userContext.userId(), folderId, shareFolderWithUsersDto);
+
+        var listResponse = new ListResponse<>(publicUsers);
+        return ResponseEntity.ok(listResponse);
+    }
+
+    @GetMapping("/{folderId}/shared-users")
+    public ResponseEntity<ListResponse<PublicUser>> getSharedFolderUsers(Authentication authentication, @PathVariable("folderId") String folderId){
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+        var sharedFolderUsers = this.folderService.fetchSharedFolderUsers(folderId, userContext.userId());
+
+        return ResponseEntity.ok(new ListResponse<>(sharedFolderUsers));
+    }
+
+    @GetMapping("/{folderId}/settlements")
+    public ResponseEntity<FolderSettlements> getSharedFolderSettlements(Authentication authentication, @PathVariable("folderId") String folderId){
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+        var folderSettlements = this.folderService.getSharedFolderSettlements(folderId, userContext.userId());
+
+        return ResponseEntity.ok(folderSettlements);
+    }
+
+    @PatchMapping("/{folderId}/settlements/resolve")
+    public void resolveSharedFolderSettlements(Authentication authentication, @PathVariable("folderId") String folderId, @Valid @RequestBody ResolveSettlementDto resolveSettlementDto){
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+        this.folderService.resolveUserSettlements(folderId, userContext.userId(),resolveSettlementDto.getUserId());
     }
 
     @DeleteMapping("/{folderId}")
