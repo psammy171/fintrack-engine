@@ -25,7 +25,7 @@ public class Oauth2Service {
     public Optional<UserContext> getUserInfo(String userId) {
         try {
 
-            String profileUrl = accountsUrl + "/profile/client";
+            String profileUrl = accountsUrl + "/oauth2/user-info";
 
             HttpHeaders headers = this.getHttpHeaders();
 
@@ -47,8 +47,9 @@ public class Oauth2Service {
 
     public List<PublicUser> searchUserInfo(String search) {
         try {
+            String searchUrl = accountsUrl + "/oauth2/search-users";
 
-            String profileUrl = UriComponentsBuilder.fromUriString(accountsUrl).path("/users")
+            String profileUrl = UriComponentsBuilder.fromUriString(searchUrl)
                     .queryParam("search", search)
                     .build()
                     .toUriString();
@@ -74,7 +75,7 @@ public class Oauth2Service {
     public List<PublicUser> getUserInfoByUserIds(String[] userIds) {
         try {
 
-            String profileUrl = accountsUrl + "/users";
+            String profileUrl = accountsUrl + "/oauth2/users-info";
 
             HttpHeaders headers = this.getHttpHeaders();
 
@@ -95,8 +96,8 @@ public class Oauth2Service {
         return List.of();
     }
 
-    public AuthorizeCodeResponseDto authorizeCode(String code){
-        String authorizeUrl = accountsUrl + "/auth/authorize/code";
+    public PublicUser authorizeCode(String code){
+        String authorizeUrl = accountsUrl + "/oauth2/token";
 
         AuthorizeCodeDto authorizeCodeDto = new AuthorizeCodeDto(this.clientId, code );
 
@@ -104,7 +105,7 @@ public class Oauth2Service {
         HttpEntity<AuthorizeCodeDto> entity = new HttpEntity<>(authorizeCodeDto, headers);
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<AuthorizeCodeResponseDto> response = restTemplate.exchange(authorizeUrl, HttpMethod.POST, entity, AuthorizeCodeResponseDto.class);
+        ResponseEntity<PublicUser> response = restTemplate.exchange(authorizeUrl, HttpMethod.POST, entity, PublicUser.class);
 
         return response.getBody();
     }

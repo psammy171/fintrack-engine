@@ -1,6 +1,7 @@
 package com.sammedsp.fintrack.security;
 
-import com.sammedsp.fintrack.dtos.AuthorizeCodeResponseDto;
+import com.sammedsp.fintrack.dtos.PublicUser;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,7 +13,7 @@ public class AuthService {
         this.oauth2Service = oauth2Service;
     }
 
-    public AuthorizeCodeResponseDto authorizeCode(String code){
+    public PublicUser authorizeCode(String code){
         return this.oauth2Service.authorizeCode(code);
     }
 }

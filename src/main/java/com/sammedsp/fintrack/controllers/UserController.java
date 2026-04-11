@@ -26,7 +26,7 @@ public class UserController {
         UserContext userContext = (UserContext) authentication.getPrincipal();
 
         var users = this.oauth2Service.searchUserInfo(search);
-        var usersExceptCurrentUser = users.stream().filter(user -> !user.userId().equals(userContext.userId())).toList();
+        var usersExceptCurrentUser = users.stream().filter(user -> !user.id().equals(userContext.userId())).toList();
         var publicUserResponse = new ListResponse<>(usersExceptCurrentUser);
 
         return ResponseEntity.ok(publicUserResponse);

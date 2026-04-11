@@ -243,7 +243,7 @@ public class FolderService {
     }
 
     private void shareFolder(String folderId, List<PublicUser> userProfiles) {
-        List<SharedFolderUser> sharedFolderUsers = userProfiles.stream().map(user -> this.getSharedFolderUser(folderId, user.userId())).toList();
+        List<SharedFolderUser> sharedFolderUsers = userProfiles.stream().map(user -> this.getSharedFolderUser(folderId, user.id())).toList();
 
         this.sharedFolderUserRepository.saveAll(sharedFolderUsers);
     }
@@ -283,7 +283,7 @@ public class FolderService {
     }
 
     private PublicUser findUser( List<PublicUser> sharedFolderUsers, String userId) {
-        var user = sharedFolderUsers.stream().filter(sharedUser -> sharedUser.userId().equals(userId)).findAny();
+        var user = sharedFolderUsers.stream().filter(sharedUser -> sharedUser.id().equals(userId)).findAny();
 
         if(user.isEmpty()){
             throw new BadRequestException("Something went wrong while fetching settlements");

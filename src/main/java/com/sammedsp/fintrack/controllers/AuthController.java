@@ -1,6 +1,6 @@
 package com.sammedsp.fintrack.controllers;
 
-import com.sammedsp.fintrack.dtos.AuthorizeCodeResponseDto;
+import com.sammedsp.fintrack.dtos.PublicUser;
 import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.security.CookieService;
 import com.sammedsp.fintrack.security.AuthService;
@@ -31,13 +31,13 @@ public class AuthController {
     }
 
     @GetMapping("/callback")
-    public ResponseEntity<AuthorizeCodeResponseDto> callback(@RequestParam("code") String code){
-        AuthorizeCodeResponseDto authorizeCodeResponseDto = this.authService.authorizeCode(code);
-        ResponseCookie cookie = this.cookieService.getResponseCookie(authorizeCodeResponseDto.userId());
+    public ResponseEntity<PublicUser> callback(@RequestParam("code") String code){
+        PublicUser publicUser = this.authService.authorizeCode(code);
+        ResponseCookie cookie = this.cookieService.getResponseCookie(publicUser.id());
         return ResponseEntity
                 .ok()
                 .header("Set-Cookie", cookie.toString())
-                .body(authorizeCodeResponseDto);
+                .body(publicUser);
     }
 
     @GetMapping("/logout")
