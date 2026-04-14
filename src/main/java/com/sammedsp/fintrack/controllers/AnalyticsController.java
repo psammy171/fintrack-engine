@@ -2,7 +2,6 @@ package com.sammedsp.fintrack.controllers;
 
 import com.sammedsp.fintrack.dtos.CurrentMonthExpenseSummary;
 import com.sammedsp.fintrack.dtos.DailyExpenseByMonthAnalytics;
-import com.sammedsp.fintrack.dtos.DailyExpensesByMonthSummary;
 import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.services.AnalyticsService;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
 import java.util.Optional;
 
 @Controller

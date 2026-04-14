@@ -107,13 +107,6 @@ public class ExpenseService {
                 .collect(Collectors.toMap(Tag::getId, Function.identity()));
     }
 
-    private Map<String, Tag> getSharedFolderTags(String folderId) {
-        List<Tag> tags = this.tagService.findSharedFolderTag(folderId);
-
-        return tags.stream()
-                .collect(Collectors.toMap(Tag::getId, Function.identity()));
-    }
-
     private ExpenseResponseDto createPersonalExpense(CreateExpenseDto createExpenseDto, String userId) {
         var tag = this.tagService.findTagByIdAndUserIdOrThrow(createExpenseDto.getTagId(), userId);
 
