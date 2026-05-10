@@ -27,7 +27,7 @@ pipeline {
                 sh "docker images --format '{{.Repository}}:{{.Tag}}' | grep '^fintrack' | xargs -r docker rmi || true"
                 sh "docker image tag psammy171/unacero:fintrack-${params.Tag} fintrack:${params.Tag}"
                 sh "docker image rm psammy171/unacero:fintrack-${params.Tag}"
-                sh "TAG=${params.Tag} docker compose -f docker-compose.yml up -d"
+                sh "TAG=${params.Tag} ENV=prod docker compose -f docker-compose.yml up -d"
             }
         }
     }
