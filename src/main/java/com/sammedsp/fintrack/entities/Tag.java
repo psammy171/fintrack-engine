@@ -3,8 +3,6 @@ package com.sammedsp.fintrack.entities;
 import com.sammedsp.fintrack.enums.TagBudgetPeriod;
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
-
 @Entity(name = "tags")
 public class Tag extends BaseEntity {
     private String name;
