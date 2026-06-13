@@ -1,7 +1,8 @@
 package com.sammedsp.fintrack.repositories;
 
-import com.sammedsp.fintrack.dtos.CurrentMonthExpenseSummary;
 import com.sammedsp.fintrack.dtos.DailyExpensesByMonthSummary;
+import com.sammedsp.fintrack.dtos.ExpenseSummaryQueryResult;
+import com.sammedsp.fintrack.dtos.TopExpenseQueryResult;
 import com.sammedsp.fintrack.entities.Expense;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,17 +26,77 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
 
     @Query(value = """
         SELECT
-            SUM(e.amount) AS total,
-            MONTHNAME(e.time) AS month
+            SUM(e.amount) AS total
         FROM
             expenses e
         WHERE
-            e.user_id =:userId
-            AND MONTH(e.time) = MONTH(CURRENT_DATE())
-            AND YEAR(e.time) = YEAR(CURRENT_DATE())
-        GROUP BY month
+            e.user_id = :userId
+            AND (:startDate IS NULL OR e.time >= :startDate)
+            AND (:endDate IS NULL OR e.time <= :endDate)
+            AND (:folderId IS NULL OR e.folder_id = :folderId)     
     """, nativeQuery = true)
-    public CurrentMonthExpenseSummary getCurrentMonthExpenseSummary(@Param("userId") String userId);
+    public ExpenseSummaryQueryResult fetchExpenseSummary(@Param("userId") String userId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("folderId") String folderId);
+
+
+    @Query(value = """
+        SELECT
+            DATE_FORMAT(daily_expenses.time, '%Y-%m-%d') AS time,
+            CAST(ROUND(daily_expenses.amount, 2) AS DOUBLE) AS amount
+        FROM (
+            SELECT
+                SUM(e.amount) AS amount,
+                e.time AS time
+            FROM
+                expenses e
+            WHERE
+                e.user_id = :userId
+                AND (:startDate IS NULL OR e.time >= :startDate)
+                AND (:endDate IS NULL OR e.time <= :endDate)
+                AND (
+                    (:folderId = "ROOT" AND e.folder_id IS NULL)
+                    OR  (e.folder_id = :folderId)
+                )
+            GROUP BY e.time
+        ) AS daily_expenses
+        ORDER BY daily_expenses.amount DESC
+        LIMIT 1
+    """, nativeQuery = true)
+    TopExpenseQueryResult fetchHighestExpense(
+        @Param("userId") String userId,
+        @Param("startDate") String startDate,
+        @Param("endDate") String endDate,
+        @Param("folderId") String folderId
+    );
+
+    @Query(value = """
+        SELECT
+            DATE_FORMAT(daily_expenses.time, '%Y-%m-%d') AS time,
+            CAST(ROUND(daily_expenses.amount, 2) AS DOUBLE) AS amount
+        FROM (
+            SELECT
+                SUM(e.amount) AS amount,
+                e.time AS time
+            FROM
+                expenses e
+            WHERE
+                e.user_id = :userId
+                AND (:startDate IS NULL OR e.time >= :startDate)
+                AND (:endDate IS NULL OR e.time <= :endDate)
+                AND (
+                    (:folderId = "ROOT" AND e.folder_id IS NULL)
+                    OR  (e.folder_id = :folderId)
+                )
+            GROUP BY e.time
+        ) AS daily_expenses
+        ORDER BY daily_expenses.amount ASC
+        LIMIT 1
+    """, nativeQuery = true)
+    TopExpenseQueryResult fetchLowestExpense(
+        @Param("userId") String userId,
+        @Param("startDate") String startDate,
+        @Param("endDate") String endDate,
+        @Param("folderId") String folderId
+    );
 
     @Query(value = """
         SELECT

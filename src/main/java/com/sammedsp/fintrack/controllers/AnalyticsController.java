@@ -1,7 +1,7 @@
 package com.sammedsp.fintrack.controllers;
 
-import com.sammedsp.fintrack.dtos.CurrentMonthExpenseSummary;
 import com.sammedsp.fintrack.dtos.DailyExpenseByMonthAnalytics;
+import com.sammedsp.fintrack.dtos.ExpenseSummary;
 import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.services.AnalyticsService;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Optional;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @Controller
 @RequestMapping("/api/analytics")
@@ -22,15 +24,16 @@ public class AnalyticsController {
         this.analyticsService = analyticsService;
     }
 
-    @RequestMapping("/current-month-summary")
-    public ResponseEntity<CurrentMonthExpenseSummary> getCurrentMonthExpenseSummary(Authentication authentication){
+    @GetMapping("/summary")
+    public ResponseEntity<ExpenseSummary> getCurrentMonthExpenseSummary(Authentication authentication, @RequestParam("start-date") Optional<String> startDate, @RequestParam("end-date") Optional<String> endDate, @RequestParam("folder-id") Optional<String> folderId){
         UserContext userContext = (UserContext) authentication.getPrincipal();
         String userId = userContext.userId();
-        CurrentMonthExpenseSummary currentMonthExpenseSummary = this.analyticsService.getCurrentMonthExpenseSummary(userId);
-        return ResponseEntity.ok(currentMonthExpenseSummary);
+
+        ExpenseSummary expenseSummary = this.analyticsService.getExpenseSummary(userId, startDate, endDate, folderId);
+        return ResponseEntity.ok(expenseSummary);
     }
 
-    @RequestMapping("/daily-expenses-by-month")
+    @GetMapping("/daily-expenses-by-month")
     public ResponseEntity<DailyExpenseByMonthAnalytics> getDailyExpensesByMonthSummary(Authentication authentication, @RequestParam("year") Optional<Integer> yearParam, @RequestParam("month") Optional<Integer> monthParam){
         UserContext userContext = (UserContext) authentication.getPrincipal();
         String userId = userContext.userId();
