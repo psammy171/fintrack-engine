@@ -1,6 +1,8 @@
 package com.sammedsp.fintrack.services;
 
 import com.sammedsp.fintrack.dtos.AverageExpense;
+import com.sammedsp.fintrack.dtos.ExpensesByTag;
+import com.sammedsp.fintrack.dtos.ExpensesByTagResponse;
 import com.sammedsp.fintrack.dtos.ExpenseSummary;
 import com.sammedsp.fintrack.dtos.ExpenseSummaryQueryResult;
 import com.sammedsp.fintrack.dtos.ExpensesByDay;
@@ -8,6 +10,7 @@ import com.sammedsp.fintrack.dtos.HighestExpense;
 import com.sammedsp.fintrack.dtos.LowestExpense;
 import com.sammedsp.fintrack.dtos.TopExpenseQueryResult;
 import com.sammedsp.fintrack.dtos.TotalExpense;
+import com.sammedsp.fintrack.entities.Tag;
 import com.sammedsp.fintrack.repositories.ExpenseRepository;
 import com.sammedsp.fintrack.utils.DateUtil;
 
@@ -21,14 +24,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AnalyticsService {
 
     private final ExpenseRepository expenseRepository;
+    private final TagService tagService;
 
-    AnalyticsService(ExpenseRepository expenseRepository){
+    AnalyticsService(ExpenseRepository expenseRepository, TagService tagService){
         this.expenseRepository = expenseRepository;
+        this.tagService = tagService;
     }
 
     public ExpenseSummary getExpenseSummary(String userId, Optional<String> startDateString, Optional<String> endDateString, Optional<String> folderId) {
@@ -56,6 +62,33 @@ public class AnalyticsService {
 
         var data =  this.expenseRepository.getExpensesByDays(userId, startDate, endDate, folderId.orElse("ROOT"));
         return addMissingDays(data, startDate, endDate);
+    }
+
+    public List<ExpensesByTagResponse> getExpensesByTags(String userId, Optional<String> startDateString, Optional<String> endDateString, Optional<String> folderId){
+        var startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
+        var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
+
+        var expensesByTag = this.expenseRepository.getExpensesByTags(userId, startDate, endDate, folderId.orElse("ROOT"));
+        var tags = this.tagService.getAllTags(userId, folderId.orElse(null), "");
+
+        return this.mapTagName(expensesByTag, tags);
+    }
+
+    private List<ExpensesByTagResponse> mapTagName(List<ExpensesByTag> expensesByTags, List<Tag> tags){
+        Map<String, String> tagNameMap = tags.stream()
+            .collect(Collectors.toMap(
+                    Tag::getId,
+                    Tag::getName
+            ));
+
+        var expensesByTagsResponse = new ArrayList<ExpensesByTagResponse>();
+
+        for(var expenseByTag: expensesByTags){
+            var tagName = tagNameMap.getOrDefault(expenseByTag.tagId(), "Untitled");
+            expensesByTagsResponse.add(new ExpensesByTagResponse(expenseByTag.total(), expenseByTag.tagId(), tagName));
+        }
+
+        return expensesByTagsResponse;
     }
 
     private List<ExpensesByDay> addMissingDays(List<ExpensesByDay> data, String startDate, String endDate){

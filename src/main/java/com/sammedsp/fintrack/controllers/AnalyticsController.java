@@ -2,6 +2,7 @@ package com.sammedsp.fintrack.controllers;
 
 import com.sammedsp.fintrack.dtos.ExpenseSummary;
 import com.sammedsp.fintrack.dtos.ExpensesByDay;
+import com.sammedsp.fintrack.dtos.ExpensesByTagResponse;
 import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.services.AnalyticsService;
 import org.springframework.http.ResponseEntity;
@@ -35,11 +36,20 @@ public class AnalyticsController {
     }
 
     @GetMapping("/expenses-by-days")
-    public ResponseEntity<List<ExpensesByDay>> getDailyExpensesByMonthSummary(Authentication authentication, @RequestParam("start-date") Optional<String> startDate, @RequestParam("end-date") Optional<String> endDate, @RequestParam("folder-id") Optional<String> folderId){
+    public ResponseEntity<List<ExpensesByDay>> getExpensesByDay(Authentication authentication, @RequestParam("start-date") Optional<String> startDate, @RequestParam("end-date") Optional<String> endDate, @RequestParam("folder-id") Optional<String> folderId){
         UserContext userContext = (UserContext) authentication.getPrincipal();
         String userId = userContext.userId();
 
         var data = this.analyticsService.getExpensesByDays(userId, startDate, endDate, folderId);
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/expenses-by-tags")
+    public ResponseEntity<List<ExpensesByTagResponse>> getExpensesByTag(Authentication authentication, @RequestParam("start-date") Optional<String> startDate, @RequestParam("end-date") Optional<String> endDate, @RequestParam("folder-id") Optional<String> folderId){
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+        String userId = userContext.userId();
+
+        var data = this.analyticsService.getExpensesByTags(userId, startDate, endDate, folderId);
         return ResponseEntity.ok(data);
     }
 }

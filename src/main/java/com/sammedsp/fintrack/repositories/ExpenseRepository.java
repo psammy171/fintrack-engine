@@ -1,5 +1,6 @@
 package com.sammedsp.fintrack.repositories;
 
+import com.sammedsp.fintrack.dtos.ExpensesByTag;
 import com.sammedsp.fintrack.dtos.ExpenseSummaryQueryResult;
 import com.sammedsp.fintrack.dtos.ExpensesByDay;
 import com.sammedsp.fintrack.dtos.TopExpenseQueryResult;
@@ -116,6 +117,29 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
         ORDER BY time ASC
     """, nativeQuery = true)
     public List<ExpensesByDay> getExpensesByDays(
+            @Param("userId") String userId,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("folderId") String folderId
+    );
+
+    @Query(value = """
+        SELECT
+            SUM(e.amount) AS total,
+            e.tag_id AS tagId
+        FROM
+            expenses e
+        WHERE
+            e.user_id = :userId
+            AND (:startDate IS NULL OR e.time >= :startDate)
+            AND (:endDate IS NULL OR e.time <= :endDate)
+            AND (
+                (:folderId = "ROOT" AND e.folder_id IS NULL)
+                OR  (e.folder_id = :folderId)
+            )
+        GROUP BY e.tag_id
+    """, nativeQuery = true)
+    public List<ExpensesByTag> getExpensesByTags(
             @Param("userId") String userId,
             @Param("startDate") String startDate,
             @Param("endDate") String endDate,
