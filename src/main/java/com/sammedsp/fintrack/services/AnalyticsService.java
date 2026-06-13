@@ -1,10 +1,9 @@
 package com.sammedsp.fintrack.services;
 
 import com.sammedsp.fintrack.dtos.AverageExpense;
-import com.sammedsp.fintrack.dtos.DailyExpenseByMonthAnalytics;
-import com.sammedsp.fintrack.dtos.DailyExpensesByMonthSummary;
 import com.sammedsp.fintrack.dtos.ExpenseSummary;
 import com.sammedsp.fintrack.dtos.ExpenseSummaryQueryResult;
+import com.sammedsp.fintrack.dtos.ExpensesByDay;
 import com.sammedsp.fintrack.dtos.HighestExpense;
 import com.sammedsp.fintrack.dtos.LowestExpense;
 import com.sammedsp.fintrack.dtos.TopExpenseQueryResult;
@@ -15,13 +14,13 @@ import com.sammedsp.fintrack.utils.DateUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class AnalyticsService {
@@ -51,26 +50,32 @@ public class AnalyticsService {
         return new ExpenseSummary(totalExpense, averageExpense, highestExpense, lowestExpense);
     }
 
-    public DailyExpenseByMonthAnalytics getDailyExpensesByMonthSummary(String userId, Optional<Integer> monthParam, Optional<Integer> yearParam) {
-        LocalDate now = LocalDate.now();
-        Integer month = monthParam.orElse(now.getMonthValue());
-        String monthName = Month.of(month).name();
-        Integer year = yearParam.orElse(now.getYear());
-        List<DailyExpensesByMonthSummary> data = this.expenseRepository.getDailyExpensesByMonthSummary(userId, month, year);
-        return new DailyExpenseByMonthAnalytics(monthName, year, this.addDefaultValueForAllDays(data, year, month));
+    public List<ExpensesByDay> getExpensesByDays(String userId, Optional<String> startDateString, Optional<String> endDateString, Optional<String> folderId) {
+        var startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
+        var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
+
+        var data =  this.expenseRepository.getExpensesByDays(userId, startDate, endDate, folderId.orElse("ROOT"));
+        return addMissingDays(data, startDate, endDate);
     }
 
-    private List<DailyExpensesByMonthSummary> addDefaultValueForAllDays(List<DailyExpensesByMonthSummary> data, Integer year, Integer month){
-        int daysInMonth = LocalDate.of(year, month, 1).lengthOfMonth();
+    private List<ExpensesByDay> addMissingDays(List<ExpensesByDay> data, String startDate, String endDate){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        Map<Integer, Double> dataMap = data.stream()
-                .collect(Collectors.toMap(DailyExpensesByMonthSummary::getDay, DailyExpensesByMonthSummary::getTotal));
+        Map<String, Double> expenseMap = new HashMap<>();
+        for (ExpensesByDay d : data) {
+            expenseMap.put(d.time(), d.total());
+        }
 
-        List<DailyExpensesByMonthSummary> result = new ArrayList<>();
+        LocalDate start = LocalDate.parse(startDate, formatter);
+        LocalDate end = LocalDate.parse(endDate, formatter);
 
-        for (int day = 1; day <= daysInMonth; day++) {
-            Double total = dataMap.getOrDefault(day, 0.0);
-            result.add(new DailyExpensesByMonthSummary(total, day));
+        List<ExpensesByDay> result = new ArrayList<>();
+        while (!start.isAfter(end)) {
+            String dateStr = start.format(formatter);
+            Double total = expenseMap.getOrDefault(dateStr, 0.0);
+
+            result.add(new ExpensesByDay(total, dateStr));
+            start = start.plusDays(1);
         }
 
         return result;

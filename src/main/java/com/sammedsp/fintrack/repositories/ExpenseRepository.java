@@ -1,7 +1,7 @@
 package com.sammedsp.fintrack.repositories;
 
-import com.sammedsp.fintrack.dtos.DailyExpensesByMonthSummary;
 import com.sammedsp.fintrack.dtos.ExpenseSummaryQueryResult;
+import com.sammedsp.fintrack.dtos.ExpensesByDay;
 import com.sammedsp.fintrack.dtos.TopExpenseQueryResult;
 import com.sammedsp.fintrack.entities.Expense;
 import org.springframework.data.domain.Page;
@@ -101,19 +101,24 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
     @Query(value = """
         SELECT
             SUM(e.amount) AS total,
-            DAY(e.time) AS day
+            DATE_FORMAT(e.time, '%Y-%m-%d') AS time
         FROM
             expenses e
         WHERE
             e.user_id = :userId
-            AND MONTH(e.time) = :month
-            AND YEAR(e.time)  = :year
-        GROUP BY day
-        ORDER BY day ASC
+            AND (:startDate IS NULL OR e.time >= :startDate)
+            AND (:endDate IS NULL OR e.time <= :endDate)
+            AND (
+                (:folderId = "ROOT" AND e.folder_id IS NULL)
+                OR  (e.folder_id = :folderId)
+            )
+        GROUP BY time
+        ORDER BY time ASC
     """, nativeQuery = true)
-    public List<DailyExpensesByMonthSummary> getDailyExpensesByMonthSummary(
+    public List<ExpensesByDay> getExpensesByDays(
             @Param("userId") String userId,
-            @Param("month") Integer month,
-            @Param("year") Integer year
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("folderId") String folderId
     );
 }
