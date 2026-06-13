@@ -41,7 +41,7 @@ public class AnalyticsService {
         var startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
         var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
         
-        ExpenseSummaryQueryResult result = this.expenseRepository.fetchExpenseSummary(userId, startDate, endDate, folderId.orElse(null));
+        ExpenseSummaryQueryResult result = this.expenseRepository.fetchExpenseSummary(userId, startDate, endDate, folderId.orElse("ROOT"));
         TopExpenseQueryResult highestExpenseResult = this.expenseRepository.fetchHighestExpense(userId, startDate, endDate, folderId.orElse("ROOT"));
         TopExpenseQueryResult lowestExpenseResult = this.expenseRepository.fetchLowestExpense(userId, startDate, endDate, folderId.orElse("ROOT"));
 

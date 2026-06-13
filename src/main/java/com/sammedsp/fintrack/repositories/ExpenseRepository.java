@@ -34,7 +34,10 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
             e.user_id = :userId
             AND (:startDate IS NULL OR e.time >= :startDate)
             AND (:endDate IS NULL OR e.time <= :endDate)
-            AND (:folderId IS NULL OR e.folder_id = :folderId)     
+            AND (
+                (:folderId = "ROOT" AND e.folder_id IS NULL)
+                OR  (e.folder_id = :folderId)
+            )
     """, nativeQuery = true)
     public ExpenseSummaryQueryResult fetchExpenseSummary(@Param("userId") String userId, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("folderId") String folderId);
 
