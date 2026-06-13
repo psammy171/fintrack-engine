@@ -27,6 +27,19 @@ public class TagService {
         return this.tagRepository.save(tag);
     }
 
+    public List<Tag> getUsersOrSharedFolderTags(String userId, String folderId){
+        if(folderId == null) {
+            return this.findUserTags(userId);
+        }
+
+        var folder = this.folderService.findByIdOrThrow(folderId);
+        if(folder.isShared()){
+            return this.findSharedFolderTag(folderId);
+        }
+
+        return this.findUserTags(userId);
+    }
+
     public List<Tag> getAllTags(String userId, String folderId, String scope){
         if("owned".equals(scope)) return this.tagRepository.findByUserId(userId);
 

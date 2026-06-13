@@ -69,7 +69,7 @@ public class AnalyticsService {
         var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
 
         var expensesByTag = this.expenseRepository.getExpensesByTags(userId, startDate, endDate, folderId.orElse("ROOT"));
-        var tags = this.tagService.getAllTags(userId, folderId.orElse(null), "");
+        var tags = this.tagService.getUsersOrSharedFolderTags(userId, folderId.orElse(null));
 
         return this.mapTagName(expensesByTag, tags);
     }
