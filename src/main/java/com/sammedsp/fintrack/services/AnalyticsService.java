@@ -31,19 +31,22 @@ public class AnalyticsService {
 
     private final ExpenseRepository expenseRepository;
     private final TagService tagService;
+    private final FolderService folderService;
 
-    AnalyticsService(ExpenseRepository expenseRepository, TagService tagService){
+    AnalyticsService(ExpenseRepository expenseRepository, TagService tagService, FolderService folderService){
         this.expenseRepository = expenseRepository;
         this.tagService = tagService;
+        this.folderService = folderService;
     }
 
     public ExpenseSummary getExpenseSummary(String userId, Optional<String> startDateString, Optional<String> endDateString, Optional<String> folderId) {
         var startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
         var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
         
-        ExpenseSummaryQueryResult result = this.expenseRepository.fetchExpenseSummary(userId, startDate, endDate, folderId.orElse("ROOT"));
-        TopExpenseQueryResult highestExpenseResult = this.expenseRepository.fetchHighestExpense(userId, startDate, endDate, folderId.orElse("ROOT"));
-        TopExpenseQueryResult lowestExpenseResult = this.expenseRepository.fetchLowestExpense(userId, startDate, endDate, folderId.orElse("ROOT"));
+        var userIdOrShared = this.getUserIdOrShared(userId, folderId);
+        ExpenseSummaryQueryResult result = this.expenseRepository.fetchExpenseSummary(userIdOrShared, startDate, endDate, folderId.orElse("ROOT"));
+        TopExpenseQueryResult highestExpenseResult = this.expenseRepository.fetchHighestExpense(userIdOrShared, startDate, endDate, folderId.orElse("ROOT"));
+        TopExpenseQueryResult lowestExpenseResult = this.expenseRepository.fetchLowestExpense(userIdOrShared, startDate, endDate, folderId.orElse("ROOT"));
 
         TotalExpense totalExpense = new TotalExpense(result.total(), startDate, endDate);
 
@@ -60,7 +63,8 @@ public class AnalyticsService {
         var startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
         var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
 
-        var data =  this.expenseRepository.getExpensesByDays(userId, startDate, endDate, folderId.orElse("ROOT"));
+        var userIdOrShared = this.getUserIdOrShared(userId, folderId);
+        var data =  this.expenseRepository.getExpensesByDays(userIdOrShared, startDate, endDate, folderId.orElse("ROOT"));
         return addMissingDays(data, startDate, endDate);
     }
 
@@ -68,7 +72,8 @@ public class AnalyticsService {
         var startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
         var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
 
-        var expensesByTag = this.expenseRepository.getExpensesByTags(userId, startDate, endDate, folderId.orElse("ROOT"));
+        var userIdOrShared = this.getUserIdOrShared(userId, folderId);
+        var expensesByTag = this.expenseRepository.getExpensesByTags(userIdOrShared, startDate, endDate, folderId.orElse("ROOT"));
         var tags = this.tagService.getUsersOrSharedFolderTags(userId, folderId.orElse(null));
 
         return this.mapTagName(expensesByTag, tags);
@@ -112,6 +117,19 @@ public class AnalyticsService {
         }
 
         return result;
+    }
+
+    private String getUserIdOrShared(String userId, Optional<String> folderId) {
+        if(folderId.isEmpty()){
+            return userId;
+        }
+
+        var folder = this.folderService.findFolderWithUserAccess(folderId.get(), userId);
+        if(folder.isShared()){
+            return "SHARED";
+        }
+
+        return userId;
     }
 
     private Double getAverage(Double total, String startDate, String endDate) {

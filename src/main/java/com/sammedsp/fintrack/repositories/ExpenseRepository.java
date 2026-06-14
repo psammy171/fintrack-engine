@@ -31,7 +31,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
         FROM
             expenses e
         WHERE
-            e.user_id = :userId
+            (:userId = "SHARED" OR e.user_id = :userId)
             AND (:startDate IS NULL OR e.time >= :startDate)
             AND (:endDate IS NULL OR e.time <= :endDate)
             AND (
@@ -53,7 +53,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
             FROM
                 expenses e
             WHERE
-                e.user_id = :userId
+                (:userId = "SHARED" OR e.user_id = :userId)
                 AND (:startDate IS NULL OR e.time >= :startDate)
                 AND (:endDate IS NULL OR e.time <= :endDate)
                 AND (
@@ -83,7 +83,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
             FROM
                 expenses e
             WHERE
-                e.user_id = :userId
+                (:userId = "SHARED" OR e.user_id = :userId)
                 AND (:startDate IS NULL OR e.time >= :startDate)
                 AND (:endDate IS NULL OR e.time <= :endDate)
                 AND (
@@ -109,7 +109,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
         FROM
             expenses e
         WHERE
-            e.user_id = :userId
+            (:userId = "SHARED" OR e.user_id = :userId)
             AND (:startDate IS NULL OR e.time >= :startDate)
             AND (:endDate IS NULL OR e.time <= :endDate)
             AND (
@@ -133,7 +133,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
         FROM
             expenses e
         WHERE
-            e.user_id = :userId
+            (:userId = "SHARED" OR e.user_id = :userId)
             AND (:startDate IS NULL OR e.time >= :startDate)
             AND (:endDate IS NULL OR e.time <= :endDate)
             AND (
