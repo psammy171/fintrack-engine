@@ -111,12 +111,9 @@ public class ExpenseService {
         var tag = this.tagService.findTagByIdAndUserIdOrThrow(createExpenseDto.getTagId(), userId);
 
         var expenseDto = this.createExpenseObject(createExpenseDto, userId);
-        System.out.println(expenseDto);
         Expense expense = this.expenseRepository.save(expenseDto);
 
         return new ExpenseResponseDto(expense.getId(), expense.getRemark(), expense.getTagId(), tag.getName(), expense.getAmount(), expense.getTime());
-
-
     }
 
     private ExpenseResponseDto createFolderExpense(CreateExpenseDto createExpenseDto, String userId, String folderId) {
