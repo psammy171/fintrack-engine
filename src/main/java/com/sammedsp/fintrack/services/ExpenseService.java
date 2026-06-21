@@ -12,7 +12,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -47,7 +49,15 @@ public class ExpenseService {
         return createPersonalExpense(createExpenseDto, userId);
     }
 
-    public PageResponse<ExpenseResponseDto> getExpense(String userId, String folderId, Pageable pageable){
+    public PageResponse<ExpensesByDateResponse> fetchResponsesByDate(String userId, String folderId, Pageable pageable){
+        var expenses = this.getExpense(userId, folderId, pageable);
+
+        var expensesByDate = this.groupExpensesByDate(expenses.content());
+
+        return new PageResponse<>(expensesByDate, expenses.first(), expenses.last(), expenses.totalElements(), expenses.totalPages());
+    }
+
+    private PageResponse<ExpenseResponseDto> getExpense(String userId, String folderId, Pageable pageable){
 
         if(folderId != null){
             var folder = this.folderService.findFolderWithUserAccess(folderId, userId);
@@ -60,6 +70,35 @@ public class ExpenseService {
         }
 
        return this.getRootFolderExpenses(userId, pageable);
+    }
+
+    private List<ExpensesByDateResponse> groupExpensesByDate(List<ExpenseResponseDto> expenses) {
+        Map<LocalDateTime, List<ExpenseResponseDto>> dateResponseMap = new HashMap<LocalDateTime, List<ExpenseResponseDto>>();
+        for(var expense: expenses){
+            var key = expense.time();
+
+            var mapEntry = dateResponseMap.getOrDefault(key, new ArrayList<>());
+            mapEntry.add(expense);
+
+            dateResponseMap.put(key, mapEntry);
+        }
+
+
+        var result = new ArrayList<ExpensesByDateResponse>();
+        for(var mapEntry: dateResponseMap.entrySet()){
+            var time = mapEntry.getKey();
+            var timeExpenses = mapEntry.getValue();
+
+            Double total = 0.0;
+            for(var exp: timeExpenses){
+                total+= exp.amount();
+            }
+
+            var expensesByDate = new ExpensesByDateResponse(time, total, timeExpenses);
+            result.add(expensesByDate);
+        }
+
+        return result;
     }
 
     private PageResponse<ExpenseResponseDto> getRootFolderExpenses(String userId, Pageable pageable) {
