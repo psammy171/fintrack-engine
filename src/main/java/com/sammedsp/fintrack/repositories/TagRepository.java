@@ -17,4 +17,6 @@ public interface TagRepository extends JpaRepository<Tag, String> {
     public Optional<Tag> findByIdAndFolderId(String id, String folderId);
 
     public Optional<Tag> findByIdAndUserId(String id, String userId);
+
+    public Integer countByUserId(String userId);
 }

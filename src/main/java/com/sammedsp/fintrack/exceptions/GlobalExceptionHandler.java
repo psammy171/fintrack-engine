@@ -16,21 +16,36 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex) {
         Map<String, Object> response = new HashMap<>();
         Map<String, String> errors = new HashMap<>();
+
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage())
         );
         response.put("errors", errors);
         response.put("message", "Invalid Request Body");
         response.put("status", HttpStatus.BAD_REQUEST);
+        
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleValidationException(BadRequestException ex) {
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("error", "Bad Request");
+        response.put("message", ex.getMessage());
+        response.put("status", HttpStatus.BAD_REQUEST);
+
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex) {
         Map<String, Object> response = new HashMap<>();
+
         response.put("error", "Internal Server Error");
         response.put("message", ex.getMessage());
         response.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
+
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class FolderService {
+    private final Integer MAX_FODLERS = 20;
 
     private final ExpenseRepository expenseRepository;
     private final FoldersRepository foldersRepository;
@@ -59,6 +60,11 @@ public class FolderService {
     }
 
     public Folder createFolder(String userId, CreateFolderDto createFolderDto){
+        var folderCount = this.foldersRepository.countByUserId(userId);
+        if(folderCount >= MAX_FODLERS){
+            throw new BadRequestException("Maximum number of folders created. Max " + MAX_FODLERS + " folders can be created.");
+        }
+
         Folder folder = new Folder();
         folder.setUserId(userId);
         folder.setName(createFolderDto.getName());
