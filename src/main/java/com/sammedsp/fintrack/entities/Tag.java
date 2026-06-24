@@ -1,9 +1,14 @@
 package com.sammedsp.fintrack.entities;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.sammedsp.fintrack.enums.TagBudgetPeriod;
 import jakarta.persistence.*;
 
 @Entity(name = "tags")
+@SQLDelete(sql = "UPDATE tags SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Tag extends BaseEntity {
     private String name;
 

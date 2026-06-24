@@ -89,6 +89,12 @@ public class TagService {
         return tag.get();
     }
 
+    public Tag deleteTag(String userId, String tagId) {
+        var tag = this.findTagByIdAndUserIdOrThrow(tagId, userId);
+        this.tagRepository.delete(tag);
+        return tag;
+    }
+
     private Tag getTagEntity(CreateTagDto createTagDto, String userId) {
         var folderId = createTagDto.getFolderId();
 
