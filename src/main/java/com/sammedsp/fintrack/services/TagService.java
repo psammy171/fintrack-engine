@@ -14,6 +14,8 @@ import java.util.Optional;
 
 @Service
 public class TagService {
+    private final Integer MAX_TAGS = 100;
+
     private final TagRepository tagRepository;
     private final FolderService folderService;
 
@@ -23,6 +25,11 @@ public class TagService {
     }
 
     public Tag createTag(String userId, CreateTagDto createTagDto){
+        var tagCount = this.tagRepository.countByUserId(userId);
+        if(tagCount >= MAX_TAGS){
+            throw new BadRequestException("Maximum number of tags created. Max " + MAX_TAGS + " tags can be created.");
+        }
+
         Tag tag = this.getTagEntity(createTagDto, userId);
         return this.tagRepository.save(tag);
     }
@@ -87,6 +94,12 @@ public class TagService {
         }
 
         return tag.get();
+    }
+
+    public Tag deleteTag(String userId, String tagId) {
+        var tag = this.findTagByIdAndUserIdOrThrow(tagId, userId);
+        this.tagRepository.delete(tag);
+        return tag;
     }
 
     private Tag getTagEntity(CreateTagDto createTagDto, String userId) {

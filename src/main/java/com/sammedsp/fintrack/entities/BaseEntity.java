@@ -19,6 +19,9 @@ public class BaseEntity {
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
 
+    @Column(name = "deleted_at", nullable = true, columnDefinition = "TIMESTAMP")
+    private LocalDateTime deletedAt;
+
     public String getId() {
         return id;
     }

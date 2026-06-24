@@ -13,4 +13,6 @@ public interface FoldersRepository extends JpaRepository<Folder, String> {
     Optional<Folder> findByIdAndUserId(String id, String userId);
 
     List<Folder> findAllByIdIn(List<String> folderIds);
+
+    Integer countByUserId(String userId);
 }

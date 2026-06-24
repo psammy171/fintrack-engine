@@ -59,4 +59,12 @@ public class TagController {
 
         return ResponseEntity.ok(tag);
     }
+
+    @DeleteMapping("/{tagId}")
+    public ResponseEntity<Tag> deleteTag(Authentication authentication, @PathVariable("tagId") String tagId) throws EntityNotFoundException {
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+        String userId = userContext.userId();
+        Tag tag = this.tagService.deleteTag(userId, tagId);
+        return ResponseEntity.ok(tag);
+    }
 }
