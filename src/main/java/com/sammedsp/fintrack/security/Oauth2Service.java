@@ -1,6 +1,7 @@
 package com.sammedsp.fintrack.security;
 
 import com.sammedsp.fintrack.dtos.*;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +47,7 @@ public class Oauth2Service {
         return Optional.empty();
     }
 
-    public List<PublicUser> searchUserInfo(String search) {
+    public List<SearchUserResponse> searchUserInfo(String search) {
         try {
             String searchUrl = accountsUrl + "/oauth2/search-users";
 
@@ -64,7 +66,7 @@ public class Oauth2Service {
             ListResponse<PublicUser> publicUserResponse = response.getBody();
 
             if(publicUserResponse != null )
-                return publicUserResponse.data();
+                return mapUsers(publicUserResponse.data());
         }catch (Exception e){
             return List.of();
         }
@@ -115,5 +117,18 @@ public class Oauth2Service {
         headers.setBasicAuth(this.clientId, this.clientSecret);
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
+    }
+
+    private List<SearchUserResponse> mapUsers(List<PublicUser> users) {
+        var sharedFolderUsers = new ArrayList<SearchUserResponse>();
+
+        for(PublicUser user : users){
+            sharedFolderUsers.add(mapUserToSearchUser(user));
+        }
+        return sharedFolderUsers;
+    }
+
+    private SearchUserResponse mapUserToSearchUser(PublicUser user) {
+        return new SearchUserResponse(user.id(), user.firstName(), user.lastName(), user.userName());
     }
 }

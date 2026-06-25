@@ -103,7 +103,7 @@ public class FolderService {
         return folder.get();
     }
 
-    public List<PublicUser> shareFolderWithUsers(String userId, String folderId, ShareFolderWithUsersDto shareFolderWithUsersDto) {
+    public List<SharedFolderUserResponse> shareFolderWithUsers(String userId, String folderId, ShareFolderWithUsersDto shareFolderWithUsersDto) {
         Folder folder = this.findByIdAndUserIdOrThrow(folderId, userId);
 
         if(!folder.isShared()){
@@ -122,10 +122,10 @@ public class FolderService {
 
         this.shareFolder(folderId, userProfiles);
 
-        return userProfiles;
+        return mapUsers(userProfiles, folder);
     }
 
-    public List<PublicUser> fetchSharedFolderUsers(String folderId, String userId) {
+    public List<SharedFolderUserResponse> fetchSharedFolderUsers(String folderId, String userId) {
        var isFolderAccessible = this.checkIfSharedFolderIsAccessible(folderId, userId);
        if(!isFolderAccessible){
            throw new BadRequestException("Folder with id " + folderId + " not found");
@@ -138,8 +138,8 @@ public class FolderService {
 
        var userIds = sharedFolderUsers.stream().map(SharedFolderUser::getUserId).toArray(String[]::new);
 
-
-       return this.oauth2Service.getUserInfoByUserIds(userIds);
+       var users = this.oauth2Service.getUserInfoByUserIds(userIds);
+       return mapUsers(users, folder);
     }
 
     public List<String> fetchSharedFolderUserIds(String folderId){
@@ -271,7 +271,7 @@ public class FolderService {
         return this.foldersRepository.findAllByIdIn(folderIds);
     }
 
-    private FolderSettlements mapUserSettlementsAndSharedUser(List<UserSettlement> userSettlements, List<PublicUser> sharedFolderUsers) {
+    private FolderSettlements mapUserSettlementsAndSharedUser(List<UserSettlement> userSettlements, List<SharedFolderUserResponse> sharedFolderUsers) {
         var positiveUserSettlements = userSettlements.stream().filter(settlement -> settlement.getAmount() > 0).toList();
 
         ArrayList<SettlementResponse> settlements  = new ArrayList<>();
@@ -288,7 +288,7 @@ public class FolderService {
         return new FolderSettlements(settlements);
     }
 
-    private PublicUser findUser( List<PublicUser> sharedFolderUsers, String userId) {
+    private SharedFolderUserResponse findUser( List<SharedFolderUserResponse> sharedFolderUsers, String userId) {
         var user = sharedFolderUsers.stream().filter(sharedUser -> sharedUser.id().equals(userId)).findAny();
 
         if(user.isEmpty()){
@@ -297,5 +297,18 @@ public class FolderService {
 
         return user.get();
 
+    }
+
+    private List<SharedFolderUserResponse> mapUsers(List<PublicUser> users, Folder folder) {
+        var sharedFolderUsers = new ArrayList<SharedFolderUserResponse>();
+
+        for(PublicUser user : users){
+            sharedFolderUsers.add(mapUserToSharedFolderUser(user, folder));
+        }
+        return sharedFolderUsers;
+    }
+
+    private SharedFolderUserResponse mapUserToSharedFolderUser(PublicUser user, Folder folder) {
+        return new SharedFolderUserResponse(user.id(), user.firstName(), user.lastName(), user.userName(), folder.getId(), folder.getUserId());
     }
 }

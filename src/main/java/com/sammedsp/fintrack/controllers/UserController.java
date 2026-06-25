@@ -1,7 +1,7 @@
 package com.sammedsp.fintrack.controllers;
 
 import com.sammedsp.fintrack.dtos.ListResponse;
-import com.sammedsp.fintrack.dtos.PublicUser;
+import com.sammedsp.fintrack.dtos.SearchUserResponse;
 import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.security.Oauth2Service;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<ListResponse<PublicUser>> searchUsers(Authentication authentication, @RequestParam("search") String search) {
+    public ResponseEntity<ListResponse<SearchUserResponse>> searchUsers(Authentication authentication, @RequestParam("search") String search) {
         UserContext userContext = (UserContext) authentication.getPrincipal();
 
         var users = this.oauth2Service.searchUserInfo(search);
