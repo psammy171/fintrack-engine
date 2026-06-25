@@ -289,7 +289,7 @@ public class FolderService {
     }
 
     private SharedFolderUserResponse findUser( List<SharedFolderUserResponse> sharedFolderUsers, String userId) {
-        var user = sharedFolderUsers.stream().filter(sharedUser -> sharedUser.userId().equals(userId)).findAny();
+        var user = sharedFolderUsers.stream().filter(sharedUser -> sharedUser.id().equals(userId)).findAny();
 
         if(user.isEmpty()){
             throw new BadRequestException("Something went wrong while fetching settlements");

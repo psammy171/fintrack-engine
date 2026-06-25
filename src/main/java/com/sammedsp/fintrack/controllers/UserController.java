@@ -2,7 +2,6 @@ package com.sammedsp.fintrack.controllers;
 
 import com.sammedsp.fintrack.dtos.ListResponse;
 import com.sammedsp.fintrack.dtos.SearchUserResponse;
-import com.sammedsp.fintrack.dtos.SharedFolderUserResponse;
 import com.sammedsp.fintrack.dtos.UserContext;
 import com.sammedsp.fintrack.security.Oauth2Service;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +26,7 @@ public class UserController {
         UserContext userContext = (UserContext) authentication.getPrincipal();
 
         var users = this.oauth2Service.searchUserInfo(search);
-        var usersExceptCurrentUser = users.stream().filter(user -> !user.userId().equals(userContext.userId())).toList();
+        var usersExceptCurrentUser = users.stream().filter(user -> !user.id().equals(userContext.userId())).toList();
         var publicUserResponse = new ListResponse<>(usersExceptCurrentUser);
 
         return ResponseEntity.ok(publicUserResponse);
