@@ -49,17 +49,17 @@ public class FoldersController {
     }
 
     @PatchMapping("/{folderId}/add-users")
-    public ResponseEntity<ListResponse<PublicUser>> shareFolderWithUsers(Authentication authentication, @PathVariable("folderId") String folderId, @Valid @RequestBody ShareFolderWithUsersDto shareFolderWithUsersDto){
+    public ResponseEntity<ListResponse<SharedFolderUserResponse>> shareFolderWithUsers(Authentication authentication, @PathVariable("folderId") String folderId, @Valid @RequestBody ShareFolderWithUsersDto shareFolderWithUsersDto){
         UserContext userContext = (UserContext) authentication.getPrincipal();
 
-        List<PublicUser> publicUsers = this.folderService.shareFolderWithUsers(userContext.userId(), folderId, shareFolderWithUsersDto);
+        List<SharedFolderUserResponse> publicUsers = this.folderService.shareFolderWithUsers(userContext.userId(), folderId, shareFolderWithUsersDto);
 
         var listResponse = new ListResponse<>(publicUsers);
         return ResponseEntity.ok(listResponse);
     }
 
     @GetMapping("/{folderId}/shared-users")
-    public ResponseEntity<ListResponse<PublicUser>> getSharedFolderUsers(Authentication authentication, @PathVariable("folderId") String folderId){
+    public ResponseEntity<ListResponse<SharedFolderUserResponse>> getSharedFolderUsers(Authentication authentication, @PathVariable("folderId") String folderId){
         UserContext userContext = (UserContext) authentication.getPrincipal();
         var sharedFolderUsers = this.folderService.fetchSharedFolderUsers(folderId, userContext.userId());
 
