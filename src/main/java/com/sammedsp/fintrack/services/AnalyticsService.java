@@ -40,8 +40,9 @@ public class AnalyticsService {
     }
 
     public ExpenseSummary getExpenseSummary(String userId, Optional<String> startDateString, Optional<String> endDateString, Optional<String> folderId) {
-        var startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
-        var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
+        String startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
+        String endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
+        DateUtil.validateDateRange(startDate, endDate);
         
         var userIdOrShared = this.getUserIdOrShared(userId, folderId);
         ExpenseSummaryQueryResult result = this.expenseRepository.fetchExpenseSummary(userIdOrShared, startDate, endDate, folderId.orElse("ROOT"));
@@ -60,8 +61,9 @@ public class AnalyticsService {
     }
 
     public List<ExpensesByDay> getExpensesByDays(String userId, Optional<String> startDateString, Optional<String> endDateString, Optional<String> folderId) {
-        var startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
-        var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
+        String startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
+        String endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
+        DateUtil.validateDateRange(startDate, endDate);
 
         var userIdOrShared = this.getUserIdOrShared(userId, folderId);
         var data =  this.expenseRepository.getExpensesByDays(userIdOrShared, startDate, endDate, folderId.orElse("ROOT"));
@@ -69,8 +71,9 @@ public class AnalyticsService {
     }
 
     public List<ExpensesByTagResponse> getExpensesByTags(String userId, Optional<String> startDateString, Optional<String> endDateString, Optional<String> folderId){
-        var startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
-        var endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
+        String startDate = DateUtil.validateAndGetDateString(startDateString, "Start Date");
+        String endDate = DateUtil.validateAndGetDateString(endDateString, "End Date");
+        DateUtil.validateDateRange(startDate, endDate);
 
         var userIdOrShared = this.getUserIdOrShared(userId, folderId);
         var expensesByTag = this.expenseRepository.getExpensesByTags(userIdOrShared, startDate, endDate, folderId.orElse("ROOT"));
