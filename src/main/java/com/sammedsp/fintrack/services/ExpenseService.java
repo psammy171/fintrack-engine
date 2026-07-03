@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -73,7 +73,7 @@ public class ExpenseService {
     }
 
     private List<ExpensesByDateResponse> groupExpensesByDate(List<ExpenseResponseDto> expenses) {
-        Map<LocalDateTime, List<ExpenseResponseDto>> dateResponseMap = new HashMap<LocalDateTime, List<ExpenseResponseDto>>();
+        Map<LocalDateTime, List<ExpenseResponseDto>> dateResponseMap = new LinkedHashMap<LocalDateTime, List<ExpenseResponseDto>>();
         for(var expense: expenses){
             var key = expense.time();
 
