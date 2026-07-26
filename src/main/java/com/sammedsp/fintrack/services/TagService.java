@@ -47,21 +47,21 @@ public class TagService {
         return this.findUserTags(userId);
     }
 
-    public List<Tag> getAllTags(String userId, String folderId, String scope){
-        if("owned".equals(scope)) return this.tagRepository.findByUserId(userId);
+    public List<Tag> getAllTags(String userId, String folderId, String scope, String search){
+        if("owned".equals(scope)) return this.tagRepository.findByUserId(userId, search);
 
         if(folderId == null)
-            return this.tagRepository.findByUserIdAndFolderIdIsNull(userId);
+            return this.tagRepository.findByUserIdAndFolderIdIsNull(userId, search);
 
-        return this.tagRepository.findByFolderId(folderId);
+        return this.tagRepository.findByFolderId(folderId, search);
     }
 
     public List<Tag> findUserTags(String userId) {
-        return this.tagRepository.findByUserIdAndFolderIdIsNull(userId);
+        return this.tagRepository.findByUserIdAndFolderIdIsNull(userId, null);
     }
 
     public List<Tag> findSharedFolderTag(String folderId) {
-        return this.tagRepository.findByFolderId(folderId);
+        return this.tagRepository.findByFolderId(folderId, null);
     }
 
     public Tag findByIdAndFolderIdOrThrow(String id, String folderId) {

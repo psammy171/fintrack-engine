@@ -26,11 +26,11 @@ public class TagController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Tag>> getAllUserTags(Authentication authentication, @RequestParam(value = "folderId", required = false) String folderId, @RequestParam(value = "scope", required = false) String scope){
+    public ResponseEntity<List<Tag>> getAllUserTags(Authentication authentication, @RequestParam(value = "folderId", required = false) String folderId, @RequestParam(value = "scope", required = false) String scope, @RequestParam(value = "search", required = false) String search){
         UserContext userContext = (UserContext) authentication.getPrincipal();
         String userId = userContext.userId();
 
-        List<Tag> tags = this.tagService.getAllTags(userId, folderId, scope);
+        List<Tag> tags = this.tagService.getAllTags(userId, folderId, scope, search);
         return ResponseEntity.ok(tags);
     }
 
