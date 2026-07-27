@@ -21,6 +21,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, String> {
 
     public Page<Expense> findAllByFolderId(String folderId, Pageable pageable);
 
+    public void deleteAllByFolderId(String folderId);
+
     @Modifying
     @Query(value = "UPDATE expenses SET folder_id = NULL where user_id = :userId AND folder_id = :folderId", nativeQuery = true)
     public void moveExpensesToRootFolder(@Param("folderId") String folderId, @Param("userId") String userId);

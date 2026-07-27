@@ -9,4 +9,8 @@ public interface SharedFolderUserRepository extends JpaRepository<SharedFolderUs
     List<SharedFolderUser> findAllByFolderId(String folderId);
 
     List<SharedFolderUser> findAllByUserId(String userId);
+
+    void deleteAllByFolderId(String folderId);
+
+    void deleteByFolderIdAndUserId(String folderId, String userId);
 }
