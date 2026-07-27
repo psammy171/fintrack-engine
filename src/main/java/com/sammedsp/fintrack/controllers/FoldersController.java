@@ -90,4 +90,12 @@ public class FoldersController {
 
         return ResponseEntity.ok(deleteResponse);
     }
+
+    @PostMapping("/{folderId}/exit")
+    public ResponseEntity<Void> exitFolder(Authentication authentication, @PathVariable("folderId") String folderId, @Valid @RequestBody ExitFolderDto exitFolderDto) throws EntityNotFoundException {
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+
+        this.folderService.exitFolder(folderId, userContext.userId(), exitFolderDto.getNewAdminUserId());
+        return ResponseEntity.noContent().build();
+    }
 }

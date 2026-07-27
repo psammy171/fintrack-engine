@@ -220,6 +220,53 @@ public class FolderService {
         return folder.isShared();
     }
 
+    @Transactional
+    public boolean exitFolder(String folderId, String userId, String newAdminUserId) {
+        var folder = this.findByIdOrThrow(folderId);
+
+        if(!folder.isShared()){
+            throw new BadRequestException("Folder with id " + folderId + " is not shared");
+        }
+
+        var sharedFolderUsers = this.sharedFolderUserRepository.findAllByFolderId(folderId);
+
+        if(isFolderOwner(folder, userId)){
+            if(sharedFolderUsers.isEmpty()){
+                return this.deleteSharedFolderEntities(folder);
+            }
+
+            var isNewAdminValid = sharedFolderUsers.stream().anyMatch(user -> user.getUserId().equals(newAdminUserId));
+            if(!isNewAdminValid){
+                throw new BadRequestException("New admin user id is not a valid shared user of the folder");
+            }
+
+            return this.replaceFolderAdmin(folder, newAdminUserId);
+        } 
+        
+        var isSharedUser = sharedFolderUsers.stream().anyMatch(user -> user.getUserId().equals(userId));
+        if(isSharedUser){
+            this.sharedFolderUserRepository.deleteByFolderIdAndUserId(folderId, userId);
+            return true;
+        }
+        
+        throw new BadRequestException("User with id " + userId + " is not a shared user of the folder");
+    }
+
+    private boolean deleteSharedFolderEntities(Folder folder) {
+        this.foldersRepository.delete(folder);
+        this.expenseRepository.deleteAllByFolderId(folder.getId());
+        this.sharedFolderUserRepository.deleteAllByFolderId(folder.getId());
+        return true;
+    }
+
+    private boolean replaceFolderAdmin(Folder folder, String newAdminUserId) {
+        folder.setUserId(newAdminUserId);
+        this.sharedFolderUserRepository.deleteByFolderIdAndUserId(folder.getId(), newAdminUserId);
+        this.foldersRepository.save(folder);
+        return true;
+
+    }
+
     private boolean isSharedFolderUser(String folderId, String userId) {
         var sharedFolderUser = this.sharedFolderUserRepository.findAllByFolderId(folderId);
 
