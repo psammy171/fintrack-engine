@@ -102,6 +102,10 @@ public class TagService {
         return tag;
     }
 
+    public void deleteByFolderId(String folderId) {
+        this.tagRepository.deleteByFolderId(folderId);
+    }
+
     private Tag getTagEntity(CreateTagDto createTagDto, String userId) {
         var folderId = createTagDto.getFolderId();
 

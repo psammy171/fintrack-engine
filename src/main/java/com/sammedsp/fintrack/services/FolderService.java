@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class FolderService {
+    private final TagService tagService;
+
     private final Integer MAX_FODLERS = 20;
 
     private final ExpenseRepository expenseRepository;
@@ -27,12 +29,13 @@ public class FolderService {
     private final UserSettlementRepository userSettlementRepository;
     private final SharedFolderUserRepository sharedFolderUserRepository;
 
-    FolderService(FoldersRepository foldersRepository, ExpenseRepository expenseRepository, SharedFolderUserRepository sharedFolderUserRepository, Oauth2Service oauth2Service, UserSettlementRepository userSettlementRepository){
+    FolderService(FoldersRepository foldersRepository, ExpenseRepository expenseRepository, SharedFolderUserRepository sharedFolderUserRepository, Oauth2Service oauth2Service, UserSettlementRepository userSettlementRepository, TagService tagService){
         this.foldersRepository = foldersRepository;
         this.expenseRepository = expenseRepository;
         this.sharedFolderUserRepository = sharedFolderUserRepository;
         this.oauth2Service = oauth2Service;
         this.userSettlementRepository = userSettlementRepository;
+        this.tagService = tagService;
     }
 
     public FolderSettlements getSharedFolderSettlements(String folderId, String userId) {
@@ -255,6 +258,7 @@ public class FolderService {
     private boolean deleteSharedFolderEntities(Folder folder) {
         this.foldersRepository.delete(folder);
         this.expenseRepository.deleteAllByFolderId(folder.getId());
+        this.tagService.deleteByFolderId(folder.getId());
         this.sharedFolderUserRepository.deleteAllByFolderId(folder.getId());
         return true;
     }
