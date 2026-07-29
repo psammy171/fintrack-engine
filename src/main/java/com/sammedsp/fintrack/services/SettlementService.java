@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sammedsp.fintrack.dtos.UserShareDto;
+import com.sammedsp.fintrack.entities.ExpenseShare;
 import com.sammedsp.fintrack.entities.UserSettlement;
 import com.sammedsp.fintrack.repositories.UserSettlementRepository;
 
@@ -47,6 +48,30 @@ public class SettlementService {
         var simplifiedSettlements = simplifyBalances(folderId, netBalances);
 
         // Step 4: replace the old ledger for this folder with the simplified one.
+        this.userSettlementRepository.deleteAll(existingSettlements);
+        this.userSettlementRepository.saveAll(simplifiedSettlements);
+    }
+
+    
+    public void reverseSettlements(String folderId, String paidBy, List<ExpenseShare> expenseShares) {
+        var existingSettlements = this.userSettlementRepository.findByFolderId(folderId);
+
+        // Fold existing pairwise settlements into net balances per user.
+        var netBalances = computeNetBalances(existingSettlements);
+
+        // Undo the expense's effect on the net balances (opposite sign of updateSettlements).
+        for (ExpenseShare expenseShare : expenseShares) {
+            if (expenseShare.getUserId().equals(paidBy)) continue;
+
+            float amount = expenseShare.getAmount();
+            netBalances.merge(paidBy, -amount, Float::sum);
+            netBalances.merge(expenseShare.getUserId(), amount, Float::sum);
+        }
+
+        // Recompute the minimal set of transactions that realize those net balances.
+        var simplifiedSettlements = simplifyBalances(folderId, netBalances);
+
+        // Replace the old ledger for this folder with the simplified one.
         this.userSettlementRepository.deleteAll(existingSettlements);
         this.userSettlementRepository.saveAll(simplifiedSettlements);
     }

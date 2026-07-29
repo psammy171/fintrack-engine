@@ -13,9 +13,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ExpenseRepository extends JpaRepository<Expense, String> {
     public Page<Expense> findAllByUserId(String userId, Pageable pageable);
+
+    public Optional<Expense> findByIdAndUserId(String id, String userId);
 
     public Page<Expense> findAllByUserIdAndFolderIdIsNull(String userId, Pageable pageable);
 

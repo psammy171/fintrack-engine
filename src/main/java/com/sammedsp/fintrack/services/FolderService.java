@@ -9,6 +9,7 @@ import com.sammedsp.fintrack.exceptions.EntityNotFoundException;
 import com.sammedsp.fintrack.repositories.ExpenseRepository;
 import com.sammedsp.fintrack.repositories.FoldersRepository;
 import com.sammedsp.fintrack.repositories.SharedFolderUserRepository;
+import com.sammedsp.fintrack.repositories.TagRepository;
 import com.sammedsp.fintrack.repositories.UserSettlementRepository;
 import com.sammedsp.fintrack.security.Oauth2Service;
 import jakarta.transaction.Transactional;
@@ -19,23 +20,23 @@ import java.util.stream.Collectors;
 
 @Service
 public class FolderService {
-    private final TagService tagService;
 
     private final Integer MAX_FODLERS = 20;
 
+    private final TagRepository tagRepository;
     private final ExpenseRepository expenseRepository;
     private final FoldersRepository foldersRepository;
     private final Oauth2Service oauth2Service;
     private final UserSettlementRepository userSettlementRepository;
     private final SharedFolderUserRepository sharedFolderUserRepository;
 
-    FolderService(FoldersRepository foldersRepository, ExpenseRepository expenseRepository, SharedFolderUserRepository sharedFolderUserRepository, Oauth2Service oauth2Service, UserSettlementRepository userSettlementRepository, TagService tagService){
+    FolderService(FoldersRepository foldersRepository, ExpenseRepository expenseRepository, SharedFolderUserRepository sharedFolderUserRepository, Oauth2Service oauth2Service, UserSettlementRepository userSettlementRepository, TagRepository tagRepository){
         this.foldersRepository = foldersRepository;
         this.expenseRepository = expenseRepository;
         this.sharedFolderUserRepository = sharedFolderUserRepository;
         this.oauth2Service = oauth2Service;
         this.userSettlementRepository = userSettlementRepository;
-        this.tagService = tagService;
+        this.tagRepository = tagRepository;
     }
 
     public FolderSettlements getSharedFolderSettlements(String folderId, String userId) {
@@ -258,7 +259,7 @@ public class FolderService {
     private boolean deleteSharedFolderEntities(Folder folder) {
         this.foldersRepository.delete(folder);
         this.expenseRepository.deleteAllByFolderId(folder.getId());
-        this.tagService.deleteByFolderId(folder.getId());
+        this.tagRepository.deleteByFolderId(folder.getId());
         this.sharedFolderUserRepository.deleteAllByFolderId(folder.getId());
         return true;
     }

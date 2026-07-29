@@ -44,4 +44,11 @@ public class ExpenseController {
         PageResponse<ExpensesByDateResponse> paginatedExpenses = this.expenseService.fetchResponsesByDate(userContext.userId(), folderId, pageable);
         return ResponseEntity.ok(paginatedExpenses);
     }
+
+    @DeleteMapping("/{expenseId}")
+    public ResponseEntity<Void> deleteExpense(Authentication authentication, @PathVariable("expenseId") String expenseId) {
+        UserContext userContext = (UserContext) authentication.getPrincipal();
+        this.expenseService.deleteExpense(userContext.userId(), expenseId);
+        return ResponseEntity.noContent().build();
+    }
 }

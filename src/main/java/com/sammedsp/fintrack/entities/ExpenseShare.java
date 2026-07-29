@@ -18,4 +18,12 @@ public class ExpenseShare extends BaseEntity {
         this.userId = userId;
         this.amount = amount;
     }
+
+    public String getUserId() {
+        return this.userId;
+    }
+
+    public Float getAmount() {
+        return this.amount;
+    }
 }

@@ -56,6 +56,32 @@ public class ExpenseService {
         return new PageResponse<>(expensesByDate, expenses.first(), expenses.last(), expenses.totalElements(), expenses.totalPages());
     }
 
+    @Transactional
+    public void deleteExpense(String userId, String expenseId) {
+        var expense = this.findExpenseByIdAndUserIdOrThrow(expenseId, userId);
+
+        if(expense.getFolderId() != null) {
+            var folder = this.folderService.findByIdOrThrow(expense.getFolderId());
+
+            if(folder.isShared()){
+                var userShares  = this.expenseShareRepository.findAllByRootTransactionId(expenseId);
+                this.settlementService.reverseSettlements(expense.getFolderId(), expense.getUserId(), userShares);
+                this.expenseShareRepository.deleteByRootTransactionId(expenseId);
+            }
+        }
+
+        this.expenseRepository.delete(expense);
+    }
+
+    public Expense findExpenseByIdAndUserIdOrThrow(String expenseId, String userId) throws EntityNotFoundException {
+        var expense = this.expenseRepository.findByIdAndUserId(expenseId, userId);
+        if(expense.isEmpty()){
+            throw new EntityNotFoundException(Tag.class.getName(), expenseId);
+        }
+
+        return expense.get();
+    }
+
     private PageResponse<ExpenseResponseDto> getExpense(String userId, String folderId, Pageable pageable){
 
         if(folderId != null){
