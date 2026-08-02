@@ -162,7 +162,7 @@ public class ExpenseService {
                     tagName = tag.getName();
                 }
             }
-            return new ExpenseResponseDto(expense.getId(), expense.getRemark(), expense.getTagId(), tagName,expense.getAmount(), expense.getTime());
+            return new ExpenseResponseDto(expense.getId(), expense.getRemark(), expense.getTagId(), tagName,expense.getAmount(), expense.getUserId(), expense.getTime());
         });
     }
 
@@ -177,7 +177,7 @@ public class ExpenseService {
         var expenseDto = this.createExpenseObject(createExpenseDto, userId);
         Expense expense = this.expenseRepository.save(expenseDto);
 
-        return new ExpenseResponseDto(expense.getId(), expense.getRemark(), expense.getTagId(), tag.getName(), expense.getAmount(), expense.getTime());
+        return new ExpenseResponseDto(expense.getId(), expense.getRemark(), expense.getTagId(), tag.getName(), expense.getAmount(), expense.getUserId(), expense.getTime());
     }
 
     private ExpenseResponseDto createFolderExpense(CreateExpenseDto createExpenseDto, String userId, String folderId) {
@@ -202,7 +202,7 @@ public class ExpenseService {
         this.expenseShareRepository.saveAll(expenseShares);
 
         this.settlementService.updateSettlements(folderId, createExpenseDto.getPaidBy(), createExpenseDto.getUserShares());
-        return new ExpenseResponseDto(expense.getId(), expense.getRemark(), expense.getTagId(), tag.getName(), expense.getAmount(), expense.getTime());
+        return new ExpenseResponseDto(expense.getId(), expense.getRemark(), expense.getTagId(), tag.getName(), expense.getAmount(), expense.getUserId(), expense.getTime());
     }
 
     private List<ExpenseShare> getExpenseShares(List<UserShareDto> userShares, String transactionId) {

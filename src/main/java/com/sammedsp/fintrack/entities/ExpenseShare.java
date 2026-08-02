@@ -13,6 +13,8 @@ public class ExpenseShare extends BaseEntity {
 
     Float amount;
 
+    public ExpenseShare() {}
+
     public ExpenseShare(String rootTransactionId, String userId, Float amount) {
         this.rootTransactionId = rootTransactionId;
         this.userId = userId;
