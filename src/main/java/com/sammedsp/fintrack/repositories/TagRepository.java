@@ -19,7 +19,9 @@ public interface TagRepository extends JpaRepository<Tag, String> {
             AND (
                 :search IS NULL 
                 OR LOWER(t.name) LIKE LOWER(CONCAT('%', :search, '%'))
-            )      
+            )
+            ORDER BY
+                t.folderId, t.name
     """)
     List<Tag> findByUserId(@Param("userId") String userId, @Param("search") String search);
 

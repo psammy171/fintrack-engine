@@ -61,9 +61,9 @@ public class Oauth2Service {
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<ListResponse<PublicUser>> response = restTemplate.exchange(profileUrl, HttpMethod.GET, entity, new ParameterizedTypeReference<ListResponse<PublicUser>>() {});
+            ResponseEntity<ListResponse<UserContext>> response = restTemplate.exchange(profileUrl, HttpMethod.GET, entity, new ParameterizedTypeReference<ListResponse<UserContext>>() {});
 
-            ListResponse<PublicUser> publicUserResponse = response.getBody();
+            ListResponse<UserContext> publicUserResponse = response.getBody();
 
             if(publicUserResponse != null )
                 return mapUsers(publicUserResponse.data());
@@ -74,7 +74,7 @@ public class Oauth2Service {
         return List.of();
     }
 
-    public List<PublicUser> getUserInfoByUserIds(String[] userIds) {
+    public List<UserContext> getUserInfoByUserIds(String[] userIds) {
         try {
 
             String profileUrl = accountsUrl + "/oauth2/users-info";
@@ -85,12 +85,12 @@ public class Oauth2Service {
             HttpEntity<PublicUserProfilesRequest> entity = new HttpEntity<>(publicUserProfilesRequest, headers);
 
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<ListResponse<PublicUser>> response = restTemplate.exchange(profileUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<ListResponse<PublicUser>>() {});
+            ResponseEntity<ListResponse<UserContext>> response = restTemplate.exchange(profileUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<ListResponse<UserContext>>() {});
 
-            ListResponse<PublicUser> publicUserResponse = response.getBody();
+            ListResponse<UserContext> userContextResponse = response.getBody();
 
-            if(publicUserResponse != null )
-                return publicUserResponse.data();
+            if(userContextResponse != null )
+                return userContextResponse.data();
         }catch (Exception e){
             return List.of();
         }
@@ -98,7 +98,7 @@ public class Oauth2Service {
         return List.of();
     }
 
-    public PublicUser authorizeCode(String code){
+    public UserContext authorizeCode(String code){
         String authorizeUrl = accountsUrl + "/oauth2/token";
 
         AuthorizeCodeDto authorizeCodeDto = new AuthorizeCodeDto(this.clientId, code );
@@ -107,7 +107,7 @@ public class Oauth2Service {
         HttpEntity<AuthorizeCodeDto> entity = new HttpEntity<>(authorizeCodeDto, headers);
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<PublicUser> response = restTemplate.exchange(authorizeUrl, HttpMethod.POST, entity, PublicUser.class);
+        ResponseEntity<UserContext> response = restTemplate.exchange(authorizeUrl, HttpMethod.POST, entity, UserContext.class);
 
         return response.getBody();
     }
@@ -119,16 +119,16 @@ public class Oauth2Service {
         return headers;
     }
 
-    private List<SearchUserResponse> mapUsers(List<PublicUser> users) {
+    private List<SearchUserResponse> mapUsers(List<UserContext> users) {
         var sharedFolderUsers = new ArrayList<SearchUserResponse>();
 
-        for(PublicUser user : users){
+        for(UserContext user : users){
             sharedFolderUsers.add(mapUserToSearchUser(user));
         }
         return sharedFolderUsers;
     }
 
-    private SearchUserResponse mapUserToSearchUser(PublicUser user) {
-        return new SearchUserResponse(user.id(), user.firstName(), user.lastName(), user.userName());
+    private SearchUserResponse mapUserToSearchUser(UserContext user) {
+        return new SearchUserResponse(user.userId(), user.firstName(), user.lastName(), user.userName());
     }
 }
