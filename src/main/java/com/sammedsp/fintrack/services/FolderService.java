@@ -122,7 +122,7 @@ public class FolderService {
             throw new BadRequestException("Folder can be shared with max 10 users");
         }
 
-        List<PublicUser> userProfiles = this.validateUserIds(newUserIds);
+        List<UserContext> userProfiles = this.validateUserIds(newUserIds);
 
         this.shareFolder(folderId, userProfiles);
 
@@ -290,18 +290,18 @@ public class FolderService {
         return Arrays.stream(userIds).filter(userId -> !existingIds.contains(userId)).toArray(String[]::new);
     }
 
-    private List<PublicUser> validateUserIds(String [] userIds) {
+    private List<UserContext> validateUserIds(String [] userIds) {
         if(userIds.length == 0) return List.of();
 
-        List<PublicUser> users = this.oauth2Service.getUserInfoByUserIds(userIds);
+        List<UserContext> users = this.oauth2Service.getUserInfoByUserIds(userIds);
         if(users.size() != userIds.length)
             throw new BadRequestException("Invalid user ids");
 
         return users;
     }
 
-    private void shareFolder(String folderId, List<PublicUser> userProfiles) {
-        List<SharedFolderUser> sharedFolderUsers = userProfiles.stream().map(user -> this.getSharedFolderUser(folderId, user.id())).toList();
+    private void shareFolder(String folderId, List<UserContext> userProfiles) {
+        List<SharedFolderUser> sharedFolderUsers = userProfiles.stream().map(user -> this.getSharedFolderUser(folderId, user.userId())).toList();
 
         this.sharedFolderUserRepository.saveAll(sharedFolderUsers);
     }
@@ -351,16 +351,16 @@ public class FolderService {
 
     }
 
-    private List<SharedFolderUserResponse> mapUsers(List<PublicUser> users, Folder folder) {
+    private List<SharedFolderUserResponse> mapUsers(List<UserContext> users, Folder folder) {
         var sharedFolderUsers = new ArrayList<SharedFolderUserResponse>();
 
-        for(PublicUser user : users){
+        for(UserContext user : users){
             sharedFolderUsers.add(mapUserToSharedFolderUser(user, folder));
         }
         return sharedFolderUsers;
     }
 
-    private SharedFolderUserResponse mapUserToSharedFolderUser(PublicUser user, Folder folder) {
-        return new SharedFolderUserResponse(user.id(), user.firstName(), user.lastName(), user.userName(), folder.getId(), folder.getUserId());
+    private SharedFolderUserResponse mapUserToSharedFolderUser(UserContext user, Folder folder) {
+        return new SharedFolderUserResponse(user.userId(), user.firstName(), user.lastName(), user.userName(), folder.getId(), folder.getUserId());
     }
 }
